@@ -1,0 +1,118 @@
+/* Buget — design tokens. Generated from tokens.json; do not edit by hand. */
+/* Theme: light by default; data-theme="dark" forces dark; no data-theme (Setări → Automată) follows the device. */
+
+:root, [data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --surface-sunken: #eef0f3;
+  --surface-hover: #f6f7f9;
+  --line: #e2e5ea;
+  --border: #7f8899;
+  --ink: #15181d;
+  --ink-muted: #586170;
+  --ink-disabled: #a2a9b4;
+  --accent: #2455d1;
+  --accent-hover: #1d47b5;
+  --accent-soft: #e8eefc;
+  --on-accent: #ffffff;
+  --positive: #137a40;
+  --positive-soft: #e6f4ec;
+  --negative: #c22d2d;
+  --negative-soft: #fcebeb;
+  --scrim: #15181d66;
+  --shadow-sm: 0 1px 2px #15181d0f, 0 1px 1px #15181d08;
+  --shadow-lg: 0 16px 40px -12px #15181d38, 0 2px 6px #15181d14;
+  --focus-ring: 0 0 0 2px #ffffff, 0 0 0 4px #2455d1;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f1115;
+  --surface: #171a20;
+  --surface-sunken: #1f232b;
+  --surface-hover: #1c2027;
+  --line: #2a2f38;
+  --border: #677080;
+  --ink: #eceff3;
+  --ink-muted: #9aa3b0;
+  --ink-disabled: #535b68;
+  --accent: #7fa3ff;
+  --accent-hover: #a0bbff;
+  --accent-soft: #1c2748;
+  --on-accent: #0c1430;
+  --positive: #4cc788;
+  --positive-soft: #132a1e;
+  --negative: #ff8a80;
+  --negative-soft: #321a1a;
+  --scrim: #000000a3;
+  --shadow-sm: 0 1px 2px #00000066;
+  --shadow-lg: 0 16px 40px -8px #000000cc;
+  --focus-ring: 0 0 0 2px #171a20, 0 0 0 4px #7fa3ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --bg: #0f1115;
+    --surface: #171a20;
+    --surface-sunken: #1f232b;
+    --surface-hover: #1c2027;
+    --line: #2a2f38;
+    --border: #677080;
+    --ink: #eceff3;
+    --ink-muted: #9aa3b0;
+    --ink-disabled: #535b68;
+    --accent: #7fa3ff;
+    --accent-hover: #a0bbff;
+    --accent-soft: #1c2748;
+    --on-accent: #0c1430;
+    --positive: #4cc788;
+    --positive-soft: #132a1e;
+    --negative: #ff8a80;
+    --negative-soft: #321a1a;
+    --scrim: #000000a3;
+    --shadow-sm: 0 1px 2px #00000066;
+    --shadow-lg: 0 16px 40px -8px #000000cc;
+    --focus-ring: 0 0 0 2px #171a20, 0 0 0 4px #7fa3ff;
+  }
+}
+
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+  --size-control: 44px;
+  --size-control-sm: 36px;
+  --size-header: 56px;
+  --size-tabbar: 64px;
+  --size-sidebar: 240px;
+  --size-content: 1040px;
+  --breakpoint-desktop: 960px;
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Type styles (amounts also need font-variant-numeric: tabular-nums) */
+.display { font-family: var(--font-sans); font-size: 40px; line-height: 48px; font-weight: 600; letter-spacing: -0.02em; }
+.amount-xl { font-family: var(--font-sans); font-size: 32px; line-height: 40px; font-weight: 600; letter-spacing: -0.015em; }
+.amount-lg { font-family: var(--font-sans); font-size: 22px; line-height: 28px; font-weight: 600; letter-spacing: -0.01em; }
+.title-1 { font-family: var(--font-sans); font-size: 24px; line-height: 32px; font-weight: 600; letter-spacing: -0.01em; }
+.title-2 { font-family: var(--font-sans); font-size: 18px; line-height: 26px; font-weight: 600; }
+.title-3 { font-family: var(--font-sans); font-size: 16px; line-height: 24px; font-weight: 600; }
+.body { font-family: var(--font-sans); font-size: 15px; line-height: 22px; font-weight: 400; }
+.body-strong { font-family: var(--font-sans); font-size: 15px; line-height: 22px; font-weight: 600; }
+.label { font-family: var(--font-sans); font-size: 13px; line-height: 18px; font-weight: 500; }
+.caption { font-family: var(--font-sans); font-size: 12px; line-height: 16px; font-weight: 400; }
+.micro { font-family: var(--font-sans); font-size: 11px; line-height: 14px; font-weight: 600; letter-spacing: 0.01em; }

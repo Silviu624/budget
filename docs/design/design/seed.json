@@ -1,0 +1,1147 @@
+{
+ "note": "Example data behind every artboard. Amounts in integer euro cents. Dates ISO (display as dd.mm.yyyy). Today in the designs: 2026-10-02.",
+ "account": {
+  "email": "silviu@exemplu.ro",
+  "displayName": "Silviu & Baby"
+ },
+ "settings": {
+  "defaultIncomeCents": 1000000,
+  "theme": "auto"
+ },
+ "fixedExpenseTemplate": [
+  {
+   "name": "Chirie",
+   "amountCents": 95000,
+   "position": 0
+  },
+  {
+   "name": "Curent",
+   "amountCents": 10000,
+   "position": 1
+  },
+  {
+   "name": "Gaz",
+   "amountCents": 8000,
+   "position": 2
+  },
+  {
+   "name": "Apă",
+   "amountCents": 4500,
+   "position": 3
+  },
+  {
+   "name": "Internet",
+   "amountCents": 4000,
+   "position": 4
+  },
+  {
+   "name": "Telefon",
+   "amountCents": 5500,
+   "position": 5
+  },
+  {
+   "name": "Mâncare",
+   "amountCents": 120000,
+   "position": 6
+  },
+  {
+   "name": "Combustibil",
+   "amountCents": 35000,
+   "position": 7
+  },
+  {
+   "name": "Abonamente",
+   "amountCents": 18000,
+   "position": 8
+  }
+ ],
+ "categories": [
+  {
+   "id": "siguranta",
+   "name": "Fond de siguranță",
+   "kind": "saving",
+   "percent": 20,
+   "targetCents": 1800000,
+   "overflowToId": "investitii",
+   "initialBalanceCents": 1080000,
+   "createdOn": "2026-05-01",
+   "position": 0
+  },
+  {
+   "id": "investitii",
+   "name": "Investiții",
+   "kind": "saving",
+   "percent": 40,
+   "targetCents": null,
+   "overflowToId": null,
+   "initialBalanceCents": 2500000,
+   "createdOn": "2026-05-01",
+   "position": 1
+  },
+  {
+   "id": "vacante",
+   "name": "Vacanțe",
+   "kind": "saving",
+   "percent": 10,
+   "targetCents": null,
+   "overflowToId": null,
+   "initialBalanceCents": 150000,
+   "createdOn": "2026-05-01",
+   "position": 2
+  },
+  {
+   "id": "masina",
+   "name": "Mașină",
+   "kind": "saving",
+   "percent": 3,
+   "targetCents": null,
+   "overflowToId": null,
+   "initialBalanceCents": 200000,
+   "createdOn": "2026-05-01",
+   "position": 3
+  },
+  {
+   "id": "casa",
+   "name": "Casă",
+   "kind": "saving",
+   "percent": 2,
+   "targetCents": null,
+   "overflowToId": null,
+   "initialBalanceCents": 80000,
+   "createdOn": "2026-05-01",
+   "position": 4
+  },
+  {
+   "id": "cadouri",
+   "name": "Cadouri și sărbători",
+   "kind": "saving",
+   "percent": 2,
+   "targetCents": null,
+   "overflowToId": null,
+   "initialBalanceCents": 30000,
+   "createdOn": "2026-05-01",
+   "position": 5
+  },
+  {
+   "id": "sanatate",
+   "name": "Sănătate",
+   "kind": "saving",
+   "percent": 2,
+   "targetCents": null,
+   "overflowToId": null,
+   "initialBalanceCents": 50000,
+   "createdOn": "2026-05-01",
+   "position": 6
+  },
+  {
+   "id": "obiectiv",
+   "name": "Obiectiv mare",
+   "kind": "saving",
+   "percent": 1,
+   "targetCents": 5000000,
+   "overflowToId": null,
+   "initialBalanceCents": 400000,
+   "createdOn": "2026-05-01",
+   "position": 7
+  },
+  {
+   "id": "extra",
+   "name": "Cheltuieli extra",
+   "kind": "spending",
+   "percent": 10,
+   "targetCents": null,
+   "overflowToId": null,
+   "initialBalanceCents": null,
+   "createdOn": "2026-05-01",
+   "position": 8
+  },
+  {
+   "id": "silviu",
+   "name": "Bani personali – Silviu",
+   "kind": "spending",
+   "percent": 5,
+   "targetCents": null,
+   "overflowToId": null,
+   "initialBalanceCents": null,
+   "createdOn": "2026-05-01",
+   "position": 9
+  },
+  {
+   "id": "baby",
+   "name": "Bani personali – Baby",
+   "kind": "spending",
+   "percent": 5,
+   "targetCents": null,
+   "overflowToId": null,
+   "initialBalanceCents": null,
+   "createdOn": "2026-05-01",
+   "position": 10
+  }
+ ],
+ "months": [
+  {
+   "key": "2026-05",
+   "label": "Mai 2026",
+   "incomeCents": 980000,
+   "status": "applied",
+   "appliedAt": "2026-05-04T09:14:00+03:00",
+   "fixedExpenses": [
+    {
+     "name": "Chirie",
+     "amountCents": 95000,
+     "position": 0
+    },
+    {
+     "name": "Curent",
+     "amountCents": 9500,
+     "position": 1
+    },
+    {
+     "name": "Gaz",
+     "amountCents": 8500,
+     "position": 2
+    },
+    {
+     "name": "Apă",
+     "amountCents": 4500,
+     "position": 3
+    },
+    {
+     "name": "Internet",
+     "amountCents": 4000,
+     "position": 4
+    },
+    {
+     "name": "Telefon",
+     "amountCents": 5500,
+     "position": 5
+    },
+    {
+     "name": "Mâncare",
+     "amountCents": 112000,
+     "position": 6
+    },
+    {
+     "name": "Combustibil",
+     "amountCents": 33000,
+     "position": 7
+    },
+    {
+     "name": "Abonamente",
+     "amountCents": 18000,
+     "position": 8
+    }
+   ],
+   "allocations": [
+    {
+     "categoryId": "siguranta",
+     "percent": 20
+    },
+    {
+     "categoryId": "investitii",
+     "percent": 40
+    },
+    {
+     "categoryId": "vacante",
+     "percent": 10
+    },
+    {
+     "categoryId": "masina",
+     "percent": 3
+    },
+    {
+     "categoryId": "casa",
+     "percent": 2
+    },
+    {
+     "categoryId": "cadouri",
+     "percent": 2
+    },
+    {
+     "categoryId": "sanatate",
+     "percent": 2
+    },
+    {
+     "categoryId": "obiectiv",
+     "percent": 1
+    },
+    {
+     "categoryId": "extra",
+     "percent": 10
+    },
+    {
+     "categoryId": "silviu",
+     "percent": 5
+    },
+    {
+     "categoryId": "baby",
+     "percent": 5
+    }
+   ]
+  },
+  {
+   "key": "2026-06",
+   "label": "Iunie 2026",
+   "incomeCents": 980000,
+   "status": "applied",
+   "appliedAt": "2026-06-03T09:14:00+03:00",
+   "fixedExpenses": [
+    {
+     "name": "Chirie",
+     "amountCents": 95000,
+     "position": 0
+    },
+    {
+     "name": "Curent",
+     "amountCents": 9000,
+     "position": 1
+    },
+    {
+     "name": "Gaz",
+     "amountCents": 5000,
+     "position": 2
+    },
+    {
+     "name": "Apă",
+     "amountCents": 4500,
+     "position": 3
+    },
+    {
+     "name": "Internet",
+     "amountCents": 4000,
+     "position": 4
+    },
+    {
+     "name": "Telefon",
+     "amountCents": 5500,
+     "position": 5
+    },
+    {
+     "name": "Mâncare",
+     "amountCents": 110000,
+     "position": 6
+    },
+    {
+     "name": "Combustibil",
+     "amountCents": 34000,
+     "position": 7
+    },
+    {
+     "name": "Abonamente",
+     "amountCents": 18000,
+     "position": 8
+    }
+   ],
+   "allocations": [
+    {
+     "categoryId": "siguranta",
+     "percent": 20
+    },
+    {
+     "categoryId": "investitii",
+     "percent": 40
+    },
+    {
+     "categoryId": "vacante",
+     "percent": 10
+    },
+    {
+     "categoryId": "masina",
+     "percent": 3
+    },
+    {
+     "categoryId": "casa",
+     "percent": 2
+    },
+    {
+     "categoryId": "cadouri",
+     "percent": 2
+    },
+    {
+     "categoryId": "sanatate",
+     "percent": 2
+    },
+    {
+     "categoryId": "obiectiv",
+     "percent": 1
+    },
+    {
+     "categoryId": "extra",
+     "percent": 10
+    },
+    {
+     "categoryId": "silviu",
+     "percent": 5
+    },
+    {
+     "categoryId": "baby",
+     "percent": 5
+    }
+   ]
+  },
+  {
+   "key": "2026-07",
+   "label": "Iulie 2026",
+   "incomeCents": 1000000,
+   "status": "applied",
+   "appliedAt": "2026-07-02T09:14:00+03:00",
+   "fixedExpenses": [
+    {
+     "name": "Chirie",
+     "amountCents": 95000,
+     "position": 0
+    },
+    {
+     "name": "Curent",
+     "amountCents": 12000,
+     "position": 1
+    },
+    {
+     "name": "Gaz",
+     "amountCents": 4000,
+     "position": 2
+    },
+    {
+     "name": "Apă",
+     "amountCents": 4500,
+     "position": 3
+    },
+    {
+     "name": "Internet",
+     "amountCents": 4000,
+     "position": 4
+    },
+    {
+     "name": "Telefon",
+     "amountCents": 5500,
+     "position": 5
+    },
+    {
+     "name": "Mâncare",
+     "amountCents": 115000,
+     "position": 6
+    },
+    {
+     "name": "Combustibil",
+     "amountCents": 37000,
+     "position": 7
+    },
+    {
+     "name": "Abonamente",
+     "amountCents": 18000,
+     "position": 8
+    }
+   ],
+   "allocations": [
+    {
+     "categoryId": "siguranta",
+     "percent": 20
+    },
+    {
+     "categoryId": "investitii",
+     "percent": 40
+    },
+    {
+     "categoryId": "vacante",
+     "percent": 10
+    },
+    {
+     "categoryId": "masina",
+     "percent": 3
+    },
+    {
+     "categoryId": "casa",
+     "percent": 2
+    },
+    {
+     "categoryId": "cadouri",
+     "percent": 2
+    },
+    {
+     "categoryId": "sanatate",
+     "percent": 2
+    },
+    {
+     "categoryId": "obiectiv",
+     "percent": 1
+    },
+    {
+     "categoryId": "extra",
+     "percent": 10
+    },
+    {
+     "categoryId": "silviu",
+     "percent": 5
+    },
+    {
+     "categoryId": "baby",
+     "percent": 5
+    }
+   ]
+  },
+  {
+   "key": "2026-08",
+   "label": "August 2026",
+   "incomeCents": 1020000,
+   "status": "applied",
+   "appliedAt": "2026-08-04T09:14:00+03:00",
+   "fixedExpenses": [
+    {
+     "name": "Chirie",
+     "amountCents": 95000,
+     "position": 0
+    },
+    {
+     "name": "Curent",
+     "amountCents": 14000,
+     "position": 1
+    },
+    {
+     "name": "Gaz",
+     "amountCents": 4000,
+     "position": 2
+    },
+    {
+     "name": "Apă",
+     "amountCents": 4500,
+     "position": 3
+    },
+    {
+     "name": "Internet",
+     "amountCents": 4000,
+     "position": 4
+    },
+    {
+     "name": "Telefon",
+     "amountCents": 5500,
+     "position": 5
+    },
+    {
+     "name": "Mâncare",
+     "amountCents": 123000,
+     "position": 6
+    },
+    {
+     "name": "Combustibil",
+     "amountCents": 42000,
+     "position": 7
+    },
+    {
+     "name": "Abonamente",
+     "amountCents": 18000,
+     "position": 8
+    }
+   ],
+   "allocations": [
+    {
+     "categoryId": "siguranta",
+     "percent": 20
+    },
+    {
+     "categoryId": "investitii",
+     "percent": 40
+    },
+    {
+     "categoryId": "vacante",
+     "percent": 10
+    },
+    {
+     "categoryId": "masina",
+     "percent": 3
+    },
+    {
+     "categoryId": "casa",
+     "percent": 2
+    },
+    {
+     "categoryId": "cadouri",
+     "percent": 2
+    },
+    {
+     "categoryId": "sanatate",
+     "percent": 2
+    },
+    {
+     "categoryId": "obiectiv",
+     "percent": 1
+    },
+    {
+     "categoryId": "extra",
+     "percent": 10
+    },
+    {
+     "categoryId": "silviu",
+     "percent": 5
+    },
+    {
+     "categoryId": "baby",
+     "percent": 5
+    }
+   ]
+  },
+  {
+   "key": "2026-09",
+   "label": "Septembrie 2026",
+   "incomeCents": 1000000,
+   "status": "applied",
+   "appliedAt": "2026-09-02T09:14:00+03:00",
+   "fixedExpenses": [
+    {
+     "name": "Chirie",
+     "amountCents": 95000,
+     "position": 0
+    },
+    {
+     "name": "Curent",
+     "amountCents": 10000,
+     "position": 1
+    },
+    {
+     "name": "Gaz",
+     "amountCents": 8000,
+     "position": 2
+    },
+    {
+     "name": "Apă",
+     "amountCents": 4500,
+     "position": 3
+    },
+    {
+     "name": "Internet",
+     "amountCents": 4000,
+     "position": 4
+    },
+    {
+     "name": "Telefon",
+     "amountCents": 5500,
+     "position": 5
+    },
+    {
+     "name": "Mâncare",
+     "amountCents": 120000,
+     "position": 6
+    },
+    {
+     "name": "Combustibil",
+     "amountCents": 35000,
+     "position": 7
+    },
+    {
+     "name": "Abonamente",
+     "amountCents": 18000,
+     "position": 8
+    }
+   ],
+   "allocations": [
+    {
+     "categoryId": "siguranta",
+     "percent": 20
+    },
+    {
+     "categoryId": "investitii",
+     "percent": 40
+    },
+    {
+     "categoryId": "vacante",
+     "percent": 10
+    },
+    {
+     "categoryId": "masina",
+     "percent": 3
+    },
+    {
+     "categoryId": "casa",
+     "percent": 2
+    },
+    {
+     "categoryId": "cadouri",
+     "percent": 2
+    },
+    {
+     "categoryId": "sanatate",
+     "percent": 2
+    },
+    {
+     "categoryId": "obiectiv",
+     "percent": 1
+    },
+    {
+     "categoryId": "extra",
+     "percent": 10
+    },
+    {
+     "categoryId": "silviu",
+     "percent": 5
+    },
+    {
+     "categoryId": "baby",
+     "percent": 5
+    }
+   ]
+  },
+  {
+   "key": "2026-10",
+   "label": "Octombrie 2026",
+   "incomeCents": 1000000,
+   "status": "planned",
+   "appliedAt": null,
+   "fixedExpenses": [
+    {
+     "name": "Chirie",
+     "amountCents": 95000,
+     "position": 0
+    },
+    {
+     "name": "Curent",
+     "amountCents": 10000,
+     "position": 1
+    },
+    {
+     "name": "Gaz",
+     "amountCents": 8000,
+     "position": 2
+    },
+    {
+     "name": "Apă",
+     "amountCents": 4500,
+     "position": 3
+    },
+    {
+     "name": "Internet",
+     "amountCents": 4000,
+     "position": 4
+    },
+    {
+     "name": "Telefon",
+     "amountCents": 5500,
+     "position": 5
+    },
+    {
+     "name": "Mâncare",
+     "amountCents": 120000,
+     "position": 6
+    },
+    {
+     "name": "Combustibil",
+     "amountCents": 35000,
+     "position": 7
+    },
+    {
+     "name": "Abonamente",
+     "amountCents": 18000,
+     "position": 8
+    }
+   ],
+   "allocations": [
+    {
+     "categoryId": "siguranta",
+     "percent": 20
+    },
+    {
+     "categoryId": "investitii",
+     "percent": 40
+    },
+    {
+     "categoryId": "vacante",
+     "percent": 10
+    },
+    {
+     "categoryId": "masina",
+     "percent": 3
+    },
+    {
+     "categoryId": "casa",
+     "percent": 2
+    },
+    {
+     "categoryId": "cadouri",
+     "percent": 2
+    },
+    {
+     "categoryId": "sanatate",
+     "percent": 2
+    },
+    {
+     "categoryId": "obiectiv",
+     "percent": 1
+    },
+    {
+     "categoryId": "extra",
+     "percent": 10
+    },
+    {
+     "categoryId": "silviu",
+     "percent": 5
+    },
+    {
+     "categoryId": "baby",
+     "percent": 5
+    }
+   ]
+  }
+ ],
+ "movements": [
+  {
+   "categoryId": "cadouri",
+   "date": "2026-05-04",
+   "type": "contribution",
+   "amountCents": 13800,
+   "note": "Mai 2026",
+   "monthKey": "2026-05"
+  },
+  {
+   "categoryId": "casa",
+   "date": "2026-05-04",
+   "type": "contribution",
+   "amountCents": 13800,
+   "note": "Mai 2026",
+   "monthKey": "2026-05"
+  },
+  {
+   "categoryId": "investitii",
+   "date": "2026-05-04",
+   "type": "contribution",
+   "amountCents": 276000,
+   "note": "Mai 2026",
+   "monthKey": "2026-05"
+  },
+  {
+   "categoryId": "masina",
+   "date": "2026-05-04",
+   "type": "contribution",
+   "amountCents": 20700,
+   "note": "Mai 2026",
+   "monthKey": "2026-05"
+  },
+  {
+   "categoryId": "obiectiv",
+   "date": "2026-05-04",
+   "type": "contribution",
+   "amountCents": 6900,
+   "note": "Mai 2026",
+   "monthKey": "2026-05"
+  },
+  {
+   "categoryId": "sanatate",
+   "date": "2026-05-04",
+   "type": "contribution",
+   "amountCents": 13800,
+   "note": "Mai 2026",
+   "monthKey": "2026-05"
+  },
+  {
+   "categoryId": "siguranta",
+   "date": "2026-05-04",
+   "type": "contribution",
+   "amountCents": 138000,
+   "note": "Mai 2026",
+   "monthKey": "2026-05"
+  },
+  {
+   "categoryId": "vacante",
+   "date": "2026-05-04",
+   "type": "contribution",
+   "amountCents": 69000,
+   "note": "Mai 2026",
+   "monthKey": "2026-05"
+  },
+  {
+   "categoryId": "sanatate",
+   "date": "2026-05-28",
+   "type": "withdrawal",
+   "amountCents": -15000,
+   "note": "Stomatolog"
+  },
+  {
+   "categoryId": "cadouri",
+   "date": "2026-06-03",
+   "type": "contribution",
+   "amountCents": 13900,
+   "note": "Iunie 2026",
+   "monthKey": "2026-06"
+  },
+  {
+   "categoryId": "casa",
+   "date": "2026-06-03",
+   "type": "contribution",
+   "amountCents": 13900,
+   "note": "Iunie 2026",
+   "monthKey": "2026-06"
+  },
+  {
+   "categoryId": "investitii",
+   "date": "2026-06-03",
+   "type": "contribution",
+   "amountCents": 278000,
+   "note": "Iunie 2026",
+   "monthKey": "2026-06"
+  },
+  {
+   "categoryId": "masina",
+   "date": "2026-06-03",
+   "type": "contribution",
+   "amountCents": 20850,
+   "note": "Iunie 2026",
+   "monthKey": "2026-06"
+  },
+  {
+   "categoryId": "obiectiv",
+   "date": "2026-06-03",
+   "type": "contribution",
+   "amountCents": 6950,
+   "note": "Iunie 2026",
+   "monthKey": "2026-06"
+  },
+  {
+   "categoryId": "sanatate",
+   "date": "2026-06-03",
+   "type": "contribution",
+   "amountCents": 13900,
+   "note": "Iunie 2026",
+   "monthKey": "2026-06"
+  },
+  {
+   "categoryId": "siguranta",
+   "date": "2026-06-03",
+   "type": "contribution",
+   "amountCents": 139000,
+   "note": "Iunie 2026",
+   "monthKey": "2026-06"
+  },
+  {
+   "categoryId": "vacante",
+   "date": "2026-06-03",
+   "type": "contribution",
+   "amountCents": 69500,
+   "note": "Iunie 2026",
+   "monthKey": "2026-06"
+  },
+  {
+   "categoryId": "siguranta",
+   "date": "2026-06-17",
+   "type": "withdrawal",
+   "amountCents": -60000,
+   "note": "Reparație centrală termică"
+  },
+  {
+   "categoryId": "cadouri",
+   "date": "2026-07-02",
+   "type": "contribution",
+   "amountCents": 14100,
+   "note": "Iulie 2026",
+   "monthKey": "2026-07"
+  },
+  {
+   "categoryId": "casa",
+   "date": "2026-07-02",
+   "type": "contribution",
+   "amountCents": 14100,
+   "note": "Iulie 2026",
+   "monthKey": "2026-07"
+  },
+  {
+   "categoryId": "investitii",
+   "date": "2026-07-02",
+   "type": "contribution",
+   "amountCents": 282000,
+   "note": "Iulie 2026",
+   "monthKey": "2026-07"
+  },
+  {
+   "categoryId": "masina",
+   "date": "2026-07-02",
+   "type": "contribution",
+   "amountCents": 21150,
+   "note": "Iulie 2026",
+   "monthKey": "2026-07"
+  },
+  {
+   "categoryId": "obiectiv",
+   "date": "2026-07-02",
+   "type": "contribution",
+   "amountCents": 7050,
+   "note": "Iulie 2026",
+   "monthKey": "2026-07"
+  },
+  {
+   "categoryId": "sanatate",
+   "date": "2026-07-02",
+   "type": "contribution",
+   "amountCents": 14100,
+   "note": "Iulie 2026",
+   "monthKey": "2026-07"
+  },
+  {
+   "categoryId": "siguranta",
+   "date": "2026-07-02",
+   "type": "contribution",
+   "amountCents": 141000,
+   "note": "Iulie 2026",
+   "monthKey": "2026-07"
+  },
+  {
+   "categoryId": "vacante",
+   "date": "2026-07-02",
+   "type": "contribution",
+   "amountCents": 70500,
+   "note": "Iulie 2026",
+   "monthKey": "2026-07"
+  },
+  {
+   "categoryId": "masina",
+   "date": "2026-07-21",
+   "type": "withdrawal",
+   "amountCents": -42000,
+   "note": "ITP și revizie"
+  },
+  {
+   "categoryId": "cadouri",
+   "date": "2026-08-04",
+   "type": "contribution",
+   "amountCents": 14200,
+   "note": "August 2026",
+   "monthKey": "2026-08"
+  },
+  {
+   "categoryId": "casa",
+   "date": "2026-08-04",
+   "type": "contribution",
+   "amountCents": 14200,
+   "note": "August 2026",
+   "monthKey": "2026-08"
+  },
+  {
+   "categoryId": "investitii",
+   "date": "2026-08-04",
+   "type": "contribution",
+   "amountCents": 284000,
+   "note": "August 2026",
+   "monthKey": "2026-08"
+  },
+  {
+   "categoryId": "masina",
+   "date": "2026-08-04",
+   "type": "contribution",
+   "amountCents": 21300,
+   "note": "August 2026",
+   "monthKey": "2026-08"
+  },
+  {
+   "categoryId": "obiectiv",
+   "date": "2026-08-04",
+   "type": "contribution",
+   "amountCents": 7100,
+   "note": "August 2026",
+   "monthKey": "2026-08"
+  },
+  {
+   "categoryId": "sanatate",
+   "date": "2026-08-04",
+   "type": "contribution",
+   "amountCents": 14200,
+   "note": "August 2026",
+   "monthKey": "2026-08"
+  },
+  {
+   "categoryId": "siguranta",
+   "date": "2026-08-04",
+   "type": "contribution",
+   "amountCents": 142000,
+   "note": "August 2026",
+   "monthKey": "2026-08"
+  },
+  {
+   "categoryId": "vacante",
+   "date": "2026-08-04",
+   "type": "contribution",
+   "amountCents": 71000,
+   "note": "August 2026",
+   "monthKey": "2026-08"
+  },
+  {
+   "categoryId": "vacante",
+   "date": "2026-08-12",
+   "type": "withdrawal",
+   "amountCents": -280000,
+   "note": "Vacanță la mare"
+  },
+  {
+   "categoryId": "cadouri",
+   "date": "2026-09-02",
+   "type": "contribution",
+   "amountCents": 14000,
+   "note": "Septembrie 2026",
+   "monthKey": "2026-09"
+  },
+  {
+   "categoryId": "casa",
+   "date": "2026-09-02",
+   "type": "contribution",
+   "amountCents": 14000,
+   "note": "Septembrie 2026",
+   "monthKey": "2026-09"
+  },
+  {
+   "categoryId": "investitii",
+   "date": "2026-09-02",
+   "type": "contribution",
+   "amountCents": 280000,
+   "note": "Septembrie 2026",
+   "monthKey": "2026-09"
+  },
+  {
+   "categoryId": "masina",
+   "date": "2026-09-02",
+   "type": "contribution",
+   "amountCents": 21000,
+   "note": "Septembrie 2026",
+   "monthKey": "2026-09"
+  },
+  {
+   "categoryId": "obiectiv",
+   "date": "2026-09-02",
+   "type": "contribution",
+   "amountCents": 7000,
+   "note": "Septembrie 2026",
+   "monthKey": "2026-09"
+  },
+  {
+   "categoryId": "sanatate",
+   "date": "2026-09-02",
+   "type": "contribution",
+   "amountCents": 14000,
+   "note": "Septembrie 2026",
+   "monthKey": "2026-09"
+  },
+  {
+   "categoryId": "siguranta",
+   "date": "2026-09-02",
+   "type": "contribution",
+   "amountCents": 140000,
+   "note": "Septembrie 2026",
+   "monthKey": "2026-09"
+  },
+  {
+   "categoryId": "vacante",
+   "date": "2026-09-02",
+   "type": "contribution",
+   "amountCents": 70000,
+   "note": "Septembrie 2026",
+   "monthKey": "2026-09"
+  },
+  {
+   "categoryId": "casa",
+   "date": "2026-09-09",
+   "type": "withdrawal",
+   "amountCents": -26000,
+   "note": "Reparație baterie baie"
+  },
+  {
+   "categoryId": "cadouri",
+   "date": "2026-09-19",
+   "type": "withdrawal",
+   "amountCents": -25000,
+   "note": "Cadou nuntă"
+  }
+ ]
+}

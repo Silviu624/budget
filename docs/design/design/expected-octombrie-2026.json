@@ -1,0 +1,154 @@
+{
+ "month": "2026-10",
+ "incomeCents": 1000000,
+ "fixedTotalCents": 300000,
+ "remainderCents": 700000,
+ "percentTotal": 100,
+ "balancesBeforeCents": {
+  "siguranta": 1720000,
+  "investitii": 3900000,
+  "vacante": 220000,
+  "masina": 263000,
+  "casa": 124000,
+  "cadouri": 75000,
+  "sanatate": 105000,
+  "obiectiv": 435000
+ },
+ "fundsTotalCents": 6842000,
+ "rows": [
+  {
+   "categoryId": "siguranta",
+   "shareCents": 140000,
+   "contributionCents": 80000,
+   "surplusOutCents": 60000,
+   "surplusInCents": 0,
+   "balanceAfterCents": 1800000
+  },
+  {
+   "categoryId": "investitii",
+   "shareCents": 280000,
+   "contributionCents": 280000,
+   "surplusOutCents": 0,
+   "surplusInCents": 60000,
+   "balanceAfterCents": 4240000
+  },
+  {
+   "categoryId": "vacante",
+   "shareCents": 70000,
+   "contributionCents": 70000,
+   "surplusOutCents": 0,
+   "surplusInCents": 0,
+   "balanceAfterCents": 290000
+  },
+  {
+   "categoryId": "masina",
+   "shareCents": 21000,
+   "contributionCents": 21000,
+   "surplusOutCents": 0,
+   "surplusInCents": 0,
+   "balanceAfterCents": 284000
+  },
+  {
+   "categoryId": "casa",
+   "shareCents": 14000,
+   "contributionCents": 14000,
+   "surplusOutCents": 0,
+   "surplusInCents": 0,
+   "balanceAfterCents": 138000
+  },
+  {
+   "categoryId": "cadouri",
+   "shareCents": 14000,
+   "contributionCents": 14000,
+   "surplusOutCents": 0,
+   "surplusInCents": 0,
+   "balanceAfterCents": 89000
+  },
+  {
+   "categoryId": "sanatate",
+   "shareCents": 14000,
+   "contributionCents": 14000,
+   "surplusOutCents": 0,
+   "surplusInCents": 0,
+   "balanceAfterCents": 119000
+  },
+  {
+   "categoryId": "obiectiv",
+   "shareCents": 7000,
+   "contributionCents": 7000,
+   "surplusOutCents": 0,
+   "surplusInCents": 0,
+   "balanceAfterCents": 442000
+  },
+  {
+   "categoryId": "extra",
+   "shareCents": 70000,
+   "contributionCents": null,
+   "surplusOutCents": null,
+   "surplusInCents": null,
+   "balanceAfterCents": null
+  },
+  {
+   "categoryId": "silviu",
+   "shareCents": 35000,
+   "contributionCents": null,
+   "surplusOutCents": null,
+   "surplusInCents": null,
+   "balanceAfterCents": null
+  },
+  {
+   "categoryId": "baby",
+   "shareCents": 35000,
+   "contributionCents": null,
+   "surplusOutCents": null,
+   "surplusInCents": null,
+   "balanceAfterCents": null
+  }
+ ],
+ "savingContributionsTotalCents": 560000,
+ "withdrawals2026Cents": -448000,
+ "history": [
+  {
+   "month": "2026-05",
+   "incomeCents": 980000,
+   "fixedCents": 290000,
+   "remainderCents": 690000,
+   "status": "applied"
+  },
+  {
+   "month": "2026-06",
+   "incomeCents": 980000,
+   "fixedCents": 285000,
+   "remainderCents": 695000,
+   "status": "applied"
+  },
+  {
+   "month": "2026-07",
+   "incomeCents": 1000000,
+   "fixedCents": 295000,
+   "remainderCents": 705000,
+   "status": "applied"
+  },
+  {
+   "month": "2026-08",
+   "incomeCents": 1020000,
+   "fixedCents": 310000,
+   "remainderCents": 710000,
+   "status": "applied"
+  },
+  {
+   "month": "2026-09",
+   "incomeCents": 1000000,
+   "fixedCents": 300000,
+   "remainderCents": 700000,
+   "status": "applied"
+  },
+  {
+   "month": "2026-10",
+   "incomeCents": 1000000,
+   "fixedCents": 300000,
+   "remainderCents": 700000,
+   "status": "planned"
+  }
+ ]
+}
