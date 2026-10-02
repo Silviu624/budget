@@ -86,6 +86,7 @@ export function fakeStore() {
     deleteCategory: vi.fn().mockResolvedValue(undefined),
     reorderCategories: vi.fn().mockResolvedValue(undefined),
     addWithdrawal: vi.fn().mockResolvedValue(undefined),
+    addPurchase: vi.fn().mockResolvedValue(undefined),
     deleteMovement: vi.fn().mockResolvedValue(undefined),
   };
 }

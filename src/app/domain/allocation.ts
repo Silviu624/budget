@@ -85,7 +85,7 @@ export function computePlan(input: PlanInput): Plan {
       return null;
     }
     const c = byId.get(id);
-    return c && c.kind === 'saving' && !c.archivedAt ? c : null;
+    return c && c.kind !== 'spending' && !c.archivedAt ? c : null;
   };
 
   const rows: PlanRow[] = ordered.map((o, i) => ({
@@ -104,7 +104,7 @@ export function computePlan(input: PlanInput): Plan {
     reachesTarget: false,
   }));
 
-  const savingRows = rows.filter((r) => r.category.kind === 'saving');
+  const savingRows = rows.filter((r) => r.category.kind !== 'spending');
   const rowById = new Map(savingRows.map((r) => [r.categoryId, r]));
   const kept = new Map<string, number>();
   for (const row of savingRows) {

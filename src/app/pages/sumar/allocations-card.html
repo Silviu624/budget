@@ -25,7 +25,7 @@
         <tr>
           <td>
             <div class="bu-cat">
-              <span class="bu-kind save"><bu-icon name="vault" [size]="18" /></span>
+              <span class="bu-kind save"><bu-icon [name]="kindIcon(row.category.kind)" [size]="18" /></span>
               <div class="cat-text">
                 <span class="name">{{ row.category.name }}</span>
                 <ng-container *ngTemplateOutlet="notes; context: { row: row }" />
@@ -101,7 +101,7 @@
   </div>
   @for (row of v.savingRows; track row.category.id) {
     <div class="bu-arow">
-      <span class="bu-kind save"><bu-icon name="vault" [size]="18" /></span>
+      <span class="bu-kind save"><bu-icon [name]="kindIcon(row.category.kind)" [size]="18" /></span>
       <div class="main">
         <div class="top">
           <span class="name">{{ row.category.name }}</span>

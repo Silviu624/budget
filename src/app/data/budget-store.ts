@@ -18,6 +18,7 @@ import { computeBalances } from '../domain/balances';
 import { addMonths, compareMonthKeys, monthLabel, todayISO } from '../domain/dates';
 import { formatEUR } from '../domain/money';
 import { activeByPosition, createPlannedMonth, reconcileAllocations } from '../domain/month';
+import { purchaseTotalCents } from '../domain/portfolio';
 import type {
   Category,
   FixedExpense,
@@ -25,6 +26,7 @@ import type {
   MonthAllocation,
   Movement,
   Profile,
+  PurchaseDetails,
 } from '../domain/types';
 import { DEFAULT_PROFILE, defaultCategories } from './defaults';
 
@@ -425,13 +427,38 @@ export class BudgetStore {
     await setDoc(doc(collection(db, 'movements')), movement);
   }
 
+  /** A purchase from an investment category: shares × price + fees leave its budget. */
+  async addPurchase(
+    categoryId: string,
+    details: PurchaseDetails,
+    note: string,
+    occurredOn: string,
+  ): Promise<void> {
+    const total = purchaseTotalCents(details);
+    const balance = this.balances()[categoryId] ?? 0;
+    if (total > balance) {
+      throw new Error(`Suma depășește bugetul disponibil (${formatEUR(balance)}).`);
+    }
+    const movement: Omit<Movement, 'id'> = {
+      categoryId,
+      type: 'purchase',
+      amountCents: -total,
+      occurredOn,
+      note: note.trim(),
+      monthKey: null,
+      createdAt: new Date().toISOString(),
+      purchase: details,
+    };
+    await setDoc(doc(collection(db, 'movements')), movement);
+  }
+
   async deleteMovement(id: string): Promise<void> {
     await deleteDoc(movementRef(id));
   }
 }
 
 function normalizeCategory(input: CategoryInput): CategoryInput {
-  const saving = input.kind === 'saving';
+  const saving = input.kind !== 'spending';
   return {
     name: input.name.trim(),
     kind: input.kind,

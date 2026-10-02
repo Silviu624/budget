@@ -17,6 +17,7 @@ interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { path: '/sumar', label: 'Sumar', icon: 'sumar' },
   { path: '/fonduri', label: 'Fonduri', icon: 'vault' },
+  { path: '/investitii', label: 'Investiții', icon: 'chart' },
   { path: '/istoric', label: 'Istoric', icon: 'history' },
   { path: '/setari', label: 'Setări', icon: 'settings' },
 ];

@@ -2,7 +2,7 @@ import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, input, output } from '@angular/core';
 import { formatDate } from '../../domain/dates';
 import { formatEUR, formatPercent } from '../../domain/money';
-import { Icon } from '../../shared/icon';
+import { Icon, kindIcon } from '../../shared/icon';
 import { PercentInput } from '../../shared/money-input';
 import type { MonthView, RowView } from './month-view';
 
@@ -28,6 +28,7 @@ export class AllocationsCard {
   protected readonly eur = formatEUR;
   protected readonly pct = formatPercent;
   protected readonly plus = (cents: number) => formatEUR(cents, { sign: true });
+  protected readonly kindIcon = kindIcon;
 
   protected readonly applied = computed(() => this.view().applied);
   protected readonly appliedDate = computed(() => {

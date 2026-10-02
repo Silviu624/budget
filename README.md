@@ -2,7 +2,8 @@
 
 A shared monthly-budget web app for a couple with one login. Each month you enter one income,
 subtract the fixed expenses, and split what remains by percentages into saving buckets (with
-balances, targets and overflow) and spending buckets (monthly allowances). The UI is in Romanian,
+balances, targets and overflow), investment buckets (a budget you buy shares from, with the
+portfolio and purchases tracked in Investiții) and spending buckets (monthly allowances). The UI is in Romanian,
 the currency is euro.
 
 Live site: https://silviu624.github.io/budget/
@@ -58,9 +59,10 @@ All money is integer euro cents. Firestore collections:
 
 ```
 settings/profile     display name, default income, theme, fixed-expense template
-categories/{id}      name, kind (saving | spending), percent, target, overflow, initial balance, position
+categories/{id}      name, kind (saving | spending | investment), percent, target, overflow, initial balance, position
 months/{yyyy-mm}     income, status (planned | applied), fixed expenses, allocations (+ stored results once applied)
-movements/{id}       contributions posted by „Aplică luna” and withdrawals; a balance = initial + Σ movements
+movements/{id}       contributions posted by „Aplică luna”, withdrawals and purchases (symbol, shares,
+                     price, fees); a balance = initial + Σ movements
 ```
 
 The allocation engine (shares with largest-remainder rounding, targets, overflow chains) lives in
@@ -81,7 +83,7 @@ src/app/data/        BudgetStore (live Firestore snapshots + every write), defau
 src/app/domain/      pure engine: money/percent formatting, dates, allocation, balances, months
 src/app/shared/      icon set, money/percent inputs, chips, meters, dialogs, toast
 src/app/shell/       app chrome (header, tab bar, sidebar, top bar, page slots)
-src/app/pages/       autentificare, sumar, fonduri (+ detaliu), istoric, setari
+src/app/pages/       autentificare, sumar, fonduri (+ detaliu), investitii, istoric, setari
 src/styles/          design tokens and the component classes ported from the handoff
 docs/design/         the Claude Design handoff (spec, design system, artboards, seed)
 ```

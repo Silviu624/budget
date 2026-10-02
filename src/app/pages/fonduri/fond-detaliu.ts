@@ -6,8 +6,10 @@ import { map } from 'rxjs';
 import { BudgetStore, NETWORK_ERROR } from '../../data/budget-store';
 import { formatDate, MONTH_NAMES, monthLabel, parseMonthKey } from '../../domain/dates';
 import { formatEUR, formatPercent } from '../../domain/money';
+import { formatShares } from '../../domain/portfolio';
+import { KIND_LABELS } from '../../domain/types';
 import { Breakpoint } from '../../shared/breakpoint';
-import { Icon } from '../../shared/icon';
+import { Icon, kindIcon } from '../../shared/icon';
 import { MoneyInput } from '../../shared/money-input';
 import { TargetProgress } from '../../shared/target-progress';
 import { Toast } from '../../shared/toast';
@@ -16,7 +18,7 @@ import { buildMonthView } from '../sumar/month-view';
 
 /** One line of „Istoric mișcări”: a movement, the planned contribution, or the starting balance. */
 interface HistoryRow {
-  kind: 'contribution' | 'withdrawal' | 'initial' | 'planned';
+  kind: 'contribution' | 'withdrawal' | 'purchase' | 'initial' | 'planned';
   date: string;
   amountCents: number;
   note: string;
@@ -40,6 +42,8 @@ export class FondDetaliu {
   protected readonly pct = formatPercent;
   protected readonly plus = (cents: number) => formatEUR(cents, { sign: true });
   protected readonly date = formatDate;
+  protected readonly kindIcon = kindIcon;
+  protected readonly kindLabel = computed(() => KIND_LABELS[this.category()?.kind ?? 'saving']);
 
   private readonly id = toSignal(this.route.paramMap.pipe(map((p) => p.get('id') ?? '')), {
     initialValue: this.route.snapshot.paramMap.get('id') ?? '',
@@ -104,7 +108,18 @@ export class FondDetaliu {
       });
     }
     for (const m of this.store.movementsOf(category.id)) {
-      rows.push({ kind: m.type, date: formatDate(m.occurredOn), amountCents: m.amountCents, note: m.note });
+      let note = m.note;
+      if (m.type === 'purchase' && m.purchase) {
+        const p = m.purchase;
+        note = `${p.symbol} · ${formatShares(p.shares)} × ${formatEUR(p.priceCents)}`;
+        if (p.feesCents > 0) {
+          note += ` · taxe ${formatEUR(p.feesCents)}`;
+        }
+        if (m.note) {
+          note += ` · ${m.note}`;
+        }
+      }
+      rows.push({ kind: m.type, date: formatDate(m.occurredOn), amountCents: m.amountCents, note });
     }
     rows.push({
       kind: 'initial',
@@ -129,7 +144,7 @@ export class FondDetaliu {
     effect(() => {
       const category = this.category();
       const loaded = this.store.categories().length > 0;
-      if (loaded && (!category || category.kind !== 'saving')) {
+      if (loaded && (!category || category.kind === 'spending')) {
         untracked(() => void this.router.navigateByUrl('/fonduri', { replaceUrl: true }));
       }
     });
@@ -144,6 +159,8 @@ export class FondDetaliu {
     switch (kind) {
       case 'withdrawal':
         return 'Retragere';
+      case 'purchase':
+        return 'Achiziție';
       case 'initial':
         return 'Sold inițial';
       default:
@@ -152,7 +169,7 @@ export class FondDetaliu {
   }
 
   protected chipIcon(kind: HistoryRow['kind']): 'in' | 'out' | 'init' {
-    return kind === 'withdrawal' ? 'out' : kind === 'initial' ? 'init' : 'in';
+    return kind === 'withdrawal' || kind === 'purchase' ? 'out' : kind === 'initial' ? 'init' : 'in';
   }
 
   protected amountText(row: HistoryRow): string {

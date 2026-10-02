@@ -186,6 +186,13 @@ describe('overflow edge cases', () => {
     expect(row(p, 'c')).toMatchObject({ contributionCents: 500, surplusOutCents: 0 });
   });
 
+  it('investment categories hold a balance and can receive the overflow', () => {
+    const cats = [cat('a', 0, { targetCents: 1000, overflowToId: 'b' }), cat('b', 1, { kind: 'investment' })];
+    const p = plan(cats, { a: 50, b: 50 }, { a: 900, b: 0 });
+    expect(row(p, 'b')).toMatchObject({ contributionCents: 500, surplusInCents: 400, balanceAfterCents: 900 });
+    expect(p.savingPostedCents).toBe(1000);
+  });
+
   it('marks the month in which a target is reached', () => {
     const cats = [cat('a', 0, { targetCents: 1000, overflowToId: 'b' }), cat('b', 1)];
     const p = plan(cats, { a: 50, b: 50 }, { a: 600, b: 0 });

@@ -64,7 +64,7 @@ export function buildMonthView(
 
   const rows: RowView[] = plan.rows.map((r) => {
     const s = applied ? stored.get(r.categoryId) : undefined;
-    const saving = r.category.kind === 'saving';
+    const saving = r.category.kind !== 'spending';
     const contributionCents = saving ? (s?.contributionCents ?? r.contributionCents ?? 0) : 0;
     const surplusOutCents = saving ? (s?.surplusOutCents ?? r.surplusOutCents ?? 0) : 0;
     const surplusInCents = saving ? (s?.surplusInCents ?? r.surplusInCents ?? 0) : 0;

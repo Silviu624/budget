@@ -20,14 +20,17 @@
     <div class="bu-vstack">
       <section class="bu-card hero">
         <div class="head">
-          <span class="bu-kind save"><bu-icon name="vault" [size]="18" /></span>
+          <span class="bu-kind save"><bu-icon [name]="kindIcon(c.kind)" [size]="18" /></span>
           <div class="titles">
             <h1 class="title-1">{{ c.name }}</h1>
-            <span class="caption bu-muted">Fond de economii · {{ pct(row()?.percent ?? c.percent) }} din rămas</span>
+            <span class="caption bu-muted">{{ kindLabel() }} · {{ pct(row()?.percent ?? c.percent) }} din rămas</span>
           </div>
+          @if (c.kind === 'investment') {
+            <a class="bu-btn ghost sm" routerLink="/investitii"><bu-icon name="chart" [size]="16" /><span>Investiții</span></a>
+          }
         </div>
         <div class="sold">
-          <span class="label bu-muted">Sold</span>
+          <span class="label bu-muted">{{ c.kind === 'investment' ? 'Buget disponibil' : 'Sold' }}</span>
           <span class="bu-num" [class.display]="desktop" [class.amount-xl]="!desktop">{{ eur(balance()) }}</span>
         </div>
         @if (c.targetCents !== null) {
@@ -66,7 +69,7 @@
                 <tr [class.planned]="h.kind === 'planned'">
                   <td class="bu-num" [class.bu-muted]="h.kind === 'planned'">{{ h.date }}</td>
                   <td><span class="bu-chip neutral"><bu-icon [name]="chipIcon(h.kind)" [size]="14" />{{ chipLabel(h.kind) }}</span></td>
-                  <td class="r body-strong bu-num" [class.bu-pos]="h.kind === 'contribution'" [class.bu-neg]="h.kind === 'withdrawal'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</td>
+                  <td class="r body-strong bu-num" [class.bu-pos]="h.kind === 'contribution'" [class.bu-neg]="h.kind === 'withdrawal' || h.kind === 'purchase'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</td>
                   <td [class.bu-muted]="h.kind === 'planned'">{{ h.note }}</td>
                 </tr>
               }
@@ -79,7 +82,7 @@
                 <span class="bu-chip neutral"><bu-icon [name]="chipIcon(h.kind)" [size]="14" />{{ chipLabel(h.kind) }}</span>
                 <span class="date bu-num">{{ h.date }}</span>
               </div>
-              <span class="body-strong bu-num" [class.bu-pos]="h.kind === 'contribution'" [class.bu-neg]="h.kind === 'withdrawal'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</span>
+              <span class="body-strong bu-num" [class.bu-pos]="h.kind === 'contribution'" [class.bu-neg]="h.kind === 'withdrawal' || h.kind === 'purchase'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</span>
               <span class="note" [class.bu-muted]="h.kind === 'planned'">{{ h.note }}</span>
             </div>
           }
@@ -136,7 +139,7 @@
         <a class="bu-btn ghost sm" routerLink="/setari" [queryParams]="{ categorie: c.id }"><bu-icon name="pencil" [size]="16" /><span>Editează</span></a>
       </div>
       <dl class="bu-dl bu-card-b">
-        <div><dt>Tip</dt><dd>Fond de economii</dd></div>
+        <div><dt>Tip</dt><dd>{{ kindLabel() }}</dd></div>
         <div><dt>Procent</dt><dd class="bu-num">{{ pct(c.percent) }} din rămas</dd></div>
         <div><dt>Țintă</dt><dd class="bu-num">{{ c.targetCents !== null ? eur(c.targetCents) : '—' }}</dd></div>
         <div><dt>Surplusul merge către</dt><dd>{{ overflowName() ?? '—' }}</dd></div>

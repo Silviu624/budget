@@ -1,0 +1,235 @@
+@let desktop = breakpoint.desktop();
+
+@if (!desktop) {
+  <h1 class="title-1">Investiții</h1>
+}
+
+@if (funds().length === 0) {
+  <section class="bu-card empty">
+    <p class="bu-muted">Nu ai încă o categorie de tip Investiții. Alege tipul „Investiții” în Setări.</p>
+    <a class="bu-btn outline sm" routerLink="/setari"><bu-icon name="settings" [size]="16" /><span>Setări</span></a>
+  </section>
+} @else {
+  @if (desktop) {
+    <div class="bu-grid3">
+      <section class="bu-card bu-kpi">
+        <span class="label bu-muted">Buget disponibil</span>
+        <span class="amount-lg bu-num">{{ eur(availableCents()) }}</span>
+        <span class="caption bu-muted">{{ funds().length === 1 ? funds()[0].name : funds().length + ' fonduri' }}</span>
+      </section>
+      <section class="bu-card bu-kpi">
+        <span class="label bu-muted">Investit</span>
+        <span class="amount-lg bu-num">{{ eur(investedCents()) }}</span>
+        <span class="caption bu-muted">{{ purchases().length }} achiziții · {{ positions().length }} simboluri</span>
+      </section>
+      <section class="bu-card bu-kpi">
+        <span class="label bu-muted">Taxe plătite</span>
+        <span class="amount-lg bu-num">{{ eur(feesCents()) }}</span>
+        <span class="caption bu-muted">Comisioane incluse în achiziții</span>
+      </section>
+    </div>
+  } @else {
+    <section class="bu-card hero">
+      <span class="label bu-muted">Buget disponibil</span>
+      <span class="amount-xl bu-num">{{ eur(availableCents()) }}</span>
+      <span class="caption bu-muted bu-num">Investit {{ eur(investedCents()) }} · taxe {{ eur(feesCents()) }}</span>
+    </section>
+  }
+
+  <div class="bu-cols wide-right">
+    <div class="bu-vstack">
+      @if (!desktop) {
+        <ng-container *ngTemplateOutlet="form" />
+      }
+
+      <section class="bu-card">
+        <div class="bu-card-h">
+          <h2 class="title-2">Portofoliu</h2>
+          <span class="caption bu-muted">{{ positions().length }} simboluri</span>
+        </div>
+        @if (positions().length === 0) {
+          <p class="bu-card-b bu-muted">Nicio achiziție încă.</p>
+        } @else if (desktop) {
+          <table class="bu-table">
+            <thead>
+              <tr><th>Simbol</th><th class="r">Acțiuni</th><th class="r">Preț mediu</th><th class="r">Taxe</th><th class="r">Investit</th></tr>
+            </thead>
+            <tbody>
+              @for (p of positions(); track p.symbol) {
+                <tr>
+                  <td class="body-strong">{{ p.symbol }}</td>
+                  <td class="r bu-num">{{ shares(p.shares) }}</td>
+                  <td class="r bu-num">{{ eur(p.averagePriceCents) }}</td>
+                  <td class="r bu-num">{{ eur(p.feesCents) }}</td>
+                  <td class="r bu-num body-strong">{{ eur(p.costCents) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          @for (p of positions(); track p.symbol) {
+            <div class="bu-row">
+              <span class="bu-grow stack">
+                <span class="body-strong">{{ p.symbol }}</span>
+                <span class="caption bu-muted bu-num">{{ shares(p.shares) }} acțiuni · preț mediu {{ eur(p.averagePriceCents) }}</span>
+              </span>
+              <span class="body-strong bu-num">{{ eur(p.costCents) }}</span>
+            </div>
+          }
+        }
+      </section>
+
+      <section class="bu-card">
+        <div class="bu-card-h">
+          <h2 class="title-2">Achiziții</h2>
+          <span class="caption bu-muted">{{ purchases().length }} achiziții · cele mai noi primele</span>
+        </div>
+        @if (purchases().length === 0) {
+          <p class="bu-card-b bu-muted">Nicio achiziție încă.</p>
+        } @else if (desktop) {
+          <table class="bu-table">
+            <thead>
+              <tr>
+                <th>Dată</th>
+                @if (funds().length > 1) { <th>Fond</th> }
+                <th>Simbol</th>
+                <th class="r">Acțiuni × Preț</th>
+                <th class="r">Taxe</th>
+                <th class="r">Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of purchases(); track m.id) {
+                <tr>
+                  <td class="bu-num">{{ date(m.occurredOn) }}</td>
+                  @if (funds().length > 1) { <td>{{ fundName(m.categoryId) }}</td> }
+                  <td>
+                    <span class="body-strong">{{ m.purchase!.symbol }}</span>
+                    @if (m.note) { <span class="caption bu-muted"> · {{ m.note }}</span> }
+                  </td>
+                  <td class="r bu-num">{{ shares(m.purchase!.shares) }} × {{ eur(m.purchase!.priceCents) }}</td>
+                  <td class="r bu-num">{{ eur(m.purchase!.feesCents) }}</td>
+                  <td class="r bu-num body-strong bu-neg">{{ eur(m.amountCents) }}</td>
+                  <td class="r">
+                    <button type="button" class="bu-iconbtn" (click)="deleting.set(m)" [attr.aria-label]="'Șterge achiziția ' + m.purchase!.symbol">
+                      <bu-icon name="trash" [size]="16" />
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          @for (m of purchases(); track m.id) {
+            <div class="bu-mrow">
+              <div class="mrow-top">
+                <span class="body-strong">{{ m.purchase!.symbol }}</span>
+                <span class="date caption bu-muted bu-num">{{ date(m.occurredOn) }}</span>
+              </div>
+              <span class="body-strong bu-num bu-neg">{{ eur(m.amountCents) }}</span>
+              <span class="note caption bu-muted bu-num">
+                {{ purchaseLine(m) }}@if (m.note) { · {{ m.note }}}
+                <button type="button" class="bu-btn ghost neutral sm" (click)="deleting.set(m)">Șterge</button>
+              </span>
+            </div>
+          }
+        }
+      </section>
+    </div>
+
+    @if (desktop) {
+      <div class="bu-vstack">
+        <ng-container *ngTemplateOutlet="form" />
+      </div>
+    }
+  </div>
+}
+
+<ng-template #form>
+  <section class="bu-card">
+    <div class="bu-card-h"><h2 class="title-2">Adaugă achiziție</h2></div>
+    <form class="bu-card-b form" (submit)="$event.preventDefault(); submit()" novalidate>
+      @if (funds().length > 1) {
+        <div class="bu-field">
+          <label class="lbl" for="purchase-fund">Fond</label>
+          <span class="bu-input">
+            <select id="purchase-fund" [value]="fundId()" (change)="fundId.set($any($event.target).value)">
+              @for (f of funds(); track f.id) {
+                <option [value]="f.id">{{ f.name }}</option>
+              }
+            </select>
+            <bu-icon name="chevD" [size]="16" class="sfx" />
+          </span>
+        </div>
+      }
+      <div class="fields-2">
+        <div class="bu-field">
+          <label class="lbl" for="purchase-symbol">Simbol</label>
+          <span class="bu-input">
+            <input id="purchase-symbol" [value]="symbol()" (input)="symbol.set($any($event.target).value)" placeholder="IWDA" autocomplete="off" autocapitalize="characters" />
+          </span>
+        </div>
+        <div class="bu-field">
+          <label class="lbl" for="purchase-shares">Număr de acțiuni</label>
+          <span class="bu-input right">
+            <input id="purchase-shares" [value]="sharesText()" (input)="sharesText.set($any($event.target).value)" inputmode="decimal" autocomplete="off" />
+          </span>
+        </div>
+      </div>
+      <div class="fields-2">
+        <div class="bu-field">
+          <label class="lbl" for="purchase-price">Preț per acțiune</label>
+          <span class="bu-input right">
+            <input id="purchase-price" [buMoney]="priceCents()" (centsChange)="priceCents.set($event)" />
+            <span class="sfx">€</span>
+          </span>
+        </div>
+        <div class="bu-field">
+          <label class="lbl" for="purchase-fees"><span>Taxe</span><span>Opțional</span></label>
+          <span class="bu-input right">
+            <input id="purchase-fees" [buMoney]="purchaseFeesCents()" [optional]="true" (centsChange)="purchaseFeesCents.set($event)" />
+            <span class="sfx">€</span>
+          </span>
+        </div>
+      </div>
+      <div class="fields-2">
+        <div class="bu-field">
+          <label class="lbl" for="purchase-date">Data</label>
+          <span class="bu-input">
+            <input id="purchase-date" type="date" [value]="occurredOn()" (change)="occurredOn.set($any($event.target).value)" />
+          </span>
+        </div>
+        <div class="bu-field">
+          <label class="lbl" for="purchase-note"><span>Notă</span><span>Opțional</span></label>
+          <span class="bu-input">
+            <input id="purchase-note" [value]="note()" (input)="note.set($any($event.target).value)" maxlength="120" autocomplete="off" />
+          </span>
+        </div>
+      </div>
+      <div class="preview">
+        <div><span class="bu-muted">Valoare acțiuni</span><span class="bu-num">{{ eur(valueCents()) }}</span></div>
+        <div><span class="bu-muted">Taxe</span><span class="bu-num">{{ eur(purchaseFeesCents()) }}</span></div>
+        <div><span class="bu-muted">Total</span><span class="body-strong bu-num bu-neg">{{ eur(-totalCents()) }}</span></div>
+        <div><span class="bu-muted">Buget după achiziție</span><span class="body-strong bu-num">{{ eur(afterCents()) }}</span></div>
+      </div>
+      @if (error(); as message) {
+        <p class="caption bu-neg" role="alert">{{ message }}</p>
+      }
+      <div class="acts">
+        <button type="button" class="bu-btn secondary" (click)="reset()">Anulează</button>
+        <button type="submit" class="bu-btn primary" [disabled]="busy()"><bu-icon name="check" [size]="18" /><span>Adaugă</span></button>
+      </div>
+    </form>
+  </section>
+</ng-template>
+
+@if (deleting()) {
+  <bu-confirm-dialog
+    [title]="deleteTitle()"
+    [body]="deleteBody()"
+    confirmLabel="Șterge"
+    (confirmed)="confirmDelete()"
+    (cancelled)="deleting.set(null)"
+  />
+}

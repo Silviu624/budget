@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
+import type { CategoryKind } from '../domain/types';
 
 /** The Buget icon set: 24px line icons, 1.75 stroke, round caps and joins, currentColor. */
 export const ICONS = {
@@ -39,9 +40,15 @@ export const ICONS = {
   sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
   moon: '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>',
   auto: '<rect x="3.5" y="4.5" width="17" height="12" rx="2"/><path d="M9 20h6M12 16.5V20"/>',
+  chart: '<path d="M4 19.5h16"/><path d="M5 15l4.5-5 3.5 3 6-7"/><path d="M15.5 6H19v3.5"/>',
 } as const;
 
 export type IconName = keyof typeof ICONS;
+
+/** The fixed kind icons: vault = Fond de economii, wallet = Buget de cheltuieli, chart = Investiții. */
+export function kindIcon(kind: CategoryKind): IconName {
+  return kind === 'spending' ? 'wallet' : kind === 'investment' ? 'chart' : 'vault';
+}
 
 @Component({
   selector: 'bu-icon',

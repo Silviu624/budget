@@ -1,4 +1,4 @@
-import type { Category, Movement } from './types';
+import { holdsBalance, type Category, type Movement } from './types';
 
 /** Balance of every saving category: initial balance plus the signed sum of its movements. */
 export function computeBalances(
@@ -7,7 +7,7 @@ export function computeBalances(
 ): Record<string, number> {
   const balances: Record<string, number> = {};
   for (const category of categories) {
-    if (category.kind === 'saving') {
+    if (holdsBalance(category.kind)) {
       balances[category.id] = category.initialBalanceCents;
     }
   }

@@ -20,6 +20,10 @@ export const routes: Routes = [
         path: 'fonduri/:id',
         loadComponent: () => import('./pages/fonduri/fond-detaliu').then((m) => m.FondDetaliu),
       },
+      {
+        path: 'investitii',
+        loadComponent: () => import('./pages/investitii/investitii').then((m) => m.Investitii),
+      },
       { path: 'istoric', loadComponent: () => import('./pages/istoric/istoric').then((m) => m.Istoric) },
       { path: 'setari', loadComponent: () => import('./pages/setari/setari').then((m) => m.Setari) },
     ],

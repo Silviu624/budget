@@ -5,7 +5,7 @@ import { formatDate, MONTH_NAMES, monthLabel, parseMonthKey } from '../../domain
 import { formatEUR, formatPercent } from '../../domain/money';
 import type { Category } from '../../domain/types';
 import { Breakpoint } from '../../shared/breakpoint';
-import { Icon } from '../../shared/icon';
+import { Icon, kindIcon } from '../../shared/icon';
 import { TargetProgress } from '../../shared/target-progress';
 import { ShellService } from '../../shell/shell.service';
 import { buildMonthView, type RowView } from '../sumar/month-view';
@@ -24,6 +24,7 @@ export class Fonduri {
   protected readonly eur = formatEUR;
   protected readonly pct = formatPercent;
   protected readonly plus = (cents: number) => formatEUR(cents, { sign: true });
+  protected readonly kindIcon = kindIcon;
 
   protected readonly key = this.store.currentMonthKey;
   protected readonly monthName = computed(() => MONTH_NAMES[parseMonthKey(this.key()).month - 1]);
@@ -35,7 +36,7 @@ export class Fonduri {
   });
   protected readonly planned = computed(() => this.view()?.applied === false);
 
-  protected readonly saving = computed(() => this.store.activeCategories().filter((c) => c.kind === 'saving'));
+  protected readonly saving = computed(() => this.store.activeCategories().filter((c) => c.kind !== 'spending'));
   protected readonly spending = computed(() => this.store.activeCategories().filter((c) => c.kind === 'spending'));
   protected readonly totalFunds = computed(() =>
     this.saving().reduce((sum, c) => sum + (this.store.balances()[c.id] ?? 0), 0),

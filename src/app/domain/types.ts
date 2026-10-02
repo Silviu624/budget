@@ -1,6 +1,17 @@
 /** Domain types shared by the pure engine, the Firestore layer and the UI. All money is integer euro cents. */
 
-export type CategoryKind = 'saving' | 'spending';
+export type CategoryKind = 'saving' | 'spending' | 'investment';
+
+export const KIND_LABELS: Record<CategoryKind, string> = {
+  saving: 'Fond de economii',
+  spending: 'Buget de cheltuieli',
+  investment: 'Investiții',
+};
+
+/** Saving and investment categories keep a running balance; spending ones are monthly allowances. */
+export function holdsBalance(kind: CategoryKind): boolean {
+  return kind !== 'spending';
+}
 
 export interface Category {
   id: string;
@@ -8,11 +19,11 @@ export interface Category {
   kind: CategoryKind;
   /** Default percent of the remainder, one decimal (e.g. 2.5). */
   percent: number;
-  /** Saving only. */
+  /** Balance-holding kinds only. */
   targetCents: number | null;
-  /** Saving only: id of another saving category that receives the surplus once the target is reached. */
+  /** Balance-holding kinds only: id of another such category that receives the surplus once the target is reached. */
   overflowToId: string | null;
-  /** Saving only. */
+  /** Balance-holding kinds only. */
   initialBalanceCents: number;
   /** ISO date (yyyy-mm-dd). */
   createdOn: string;
@@ -53,13 +64,22 @@ export interface Month {
   allocations: MonthAllocation[];
 }
 
-export type MovementType = 'contribution' | 'withdrawal';
+export type MovementType = 'contribution' | 'withdrawal' | 'purchase';
+
+/** What was bought from an investment category: shares of one symbol at one price, plus fees. */
+export interface PurchaseDetails {
+  symbol: string;
+  /** May be fractional (up to 6 decimals). */
+  shares: number;
+  priceCents: number;
+  feesCents: number;
+}
 
 export interface Movement {
   id: string;
   categoryId: string;
   type: MovementType;
-  /** Signed: contributions positive, withdrawals negative. */
+  /** Signed: contributions positive, withdrawals and purchases negative. */
   amountCents: number;
   /** ISO date (yyyy-mm-dd). */
   occurredOn: string;
@@ -68,6 +88,8 @@ export interface Movement {
   monthKey: string | null;
   /** ISO date-time. */
   createdAt: string;
+  /** Set for purchases. */
+  purchase?: PurchaseDetails | null;
 }
 
 export type ThemeChoice = 'auto' | 'light' | 'dark';

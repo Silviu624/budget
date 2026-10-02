@@ -30,6 +30,7 @@ Read the brief before starting any feature, and the matching artboards before bu
 - **D3–D6**: defaults from BUILD_BRIEF §1 (per-month percentages, withdrawal > balance blocked, no sign-up, one decimal percent).
 - Personal buckets are „Bani personali – Baby” and „Bani personali – Babyshutzu”; the account display name is „Baby & Babyshutzu”.
 - The live database starts with the design's categories and expense template but **zero balances**; `design/seed.json` is for tests and local development only.
+- **Investiții (2026-10-02)**: a third category kind `investment`, not in the handoff. It behaves like a saving fund plus purchases (movements of type `purchase` with symbol, shares, price, fees; the balance is the „Buget disponibil”). Own page `/investitii` (5th navigation item) built in the design system's style; its copy was written by Claude and approved implicitly by the request.
 
 ## Ask the owner before
 

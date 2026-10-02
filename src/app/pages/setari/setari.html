@@ -95,8 +95,8 @@
         @if (cEditing() === 'new') {
           <li class="bu-row row-editing">
             <div class="editor-head">
-              <span class="bu-kind sm" [class.save]="draft().kind === 'saving'" [class.spend]="draft().kind === 'spending'">
-                <bu-icon [name]="draft().kind === 'saving' ? 'vault' : 'wallet'" [size]="16" />
+              <span class="bu-kind sm" [class.save]="draft().kind !== 'spending'" [class.spend]="draft().kind === 'spending'">
+                <bu-icon [name]="kindIcon(draft().kind)" [size]="16" />
               </span>
               <span class="title-3">{{ editorTitle() }}</span>
             </div>
@@ -108,8 +108,8 @@
             @if (cEditing() === c.id) {
               <div class="editor-head">
                 <span class="grip" aria-hidden="true"><bu-icon name="grip" [size]="16" /></span>
-                <span class="bu-kind sm" [class.save]="draft().kind === 'saving'" [class.spend]="draft().kind === 'spending'">
-                  <bu-icon [name]="draft().kind === 'saving' ? 'vault' : 'wallet'" [size]="16" />
+                <span class="bu-kind sm" [class.save]="draft().kind !== 'spending'" [class.spend]="draft().kind === 'spending'">
+                  <bu-icon [name]="kindIcon(draft().kind)" [size]="16" />
                 </span>
                 <span class="title-3">{{ editorTitle() }}</span>
                 <span class="acts">
@@ -120,8 +120,8 @@
               <ng-container *ngTemplateOutlet="categoryEditor; context: { canDelete: true }" />
             } @else {
               <span class="grip" cdkDragHandle aria-hidden="true"><bu-icon name="grip" [size]="16" /></span>
-              <span class="bu-kind sm" [class.save]="c.kind === 'saving'" [class.spend]="c.kind === 'spending'">
-                <bu-icon [name]="c.kind === 'saving' ? 'vault' : 'wallet'" [size]="16" />
+              <span class="bu-kind sm" [class.save]="c.kind !== 'spending'" [class.spend]="c.kind === 'spending'">
+                <bu-icon [name]="kindIcon(c.kind)" [size]="16" />
               </span>
               <span class="bu-grow stack">
                 <span class="name">{{ c.name }}</span>
@@ -208,21 +208,20 @@
     <div class="bu-field">
       <span class="lbl">Tip</span>
       <div class="bu-seg block" role="radiogroup" aria-label="Tip">
-        <button type="button" role="radio" [attr.aria-checked]="d.kind === 'saving'" [class.on]="d.kind === 'saving'" (click)="patchDraft({ kind: 'saving' })">
-          <bu-icon name="vault" [size]="16" /> Fond de economii
-        </button>
-        <button type="button" role="radio" [attr.aria-checked]="d.kind === 'spending'" [class.on]="d.kind === 'spending'" (click)="patchDraft({ kind: 'spending' })">
-          <bu-icon name="wallet" [size]="16" /> Buget de cheltuieli
-        </button>
+        @for (k of kinds; track k.value) {
+          <button type="button" role="radio" [attr.aria-checked]="d.kind === k.value" [class.on]="d.kind === k.value" (click)="patchDraft({ kind: k.value })">
+            <bu-icon [name]="kindIcon(k.value)" [size]="16" /> {{ k.label }}
+          </button>
+        }
       </div>
     </div>
   </div>
-  <div [class.fields-4]="d.kind === 'saving'" [class.fields-2]="d.kind === 'spending'">
+  <div [class.fields-4]="d.kind !== 'spending'" [class.fields-2]="d.kind === 'spending'">
     <label class="bu-field">
       <span class="lbl">Procent</span>
       <span class="bu-input right"><input [buPercent]="d.percent" (percentChange)="patchDraft({ percent: $event })" /><span class="sfx">%</span></span>
     </label>
-    @if (d.kind === 'saving') {
+    @if (d.kind !== 'spending') {
       <label class="bu-field">
         <span class="lbl"><span>Țintă</span><span>Opțional</span></span>
         <span class="bu-input right"><input [buMoney]="d.targetCents" [optional]="true" (centsChange)="patchDraft({ targetCents: $event })" /><span class="sfx">€</span></span>
@@ -245,7 +244,7 @@
       </label>
     }
   </div>
-  @if (d.kind === 'saving') {
+  @if (d.kind !== 'spending') {
     <span class="hint">
       @if (desktop) {
         Când soldul atinge ținta, partea acestui fond merge în categoria aleasă la „Surplusul merge către”.

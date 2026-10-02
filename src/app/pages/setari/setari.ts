@@ -8,10 +8,10 @@ import { ThemeService } from '../../core/theme.service';
 import { BudgetStore, NETWORK_ERROR, type CategoryInput } from '../../data/budget-store';
 import { fixedTotal } from '../../domain/balances';
 import { formatEUR, formatPercent, toTenths } from '../../domain/money';
-import type { Category, CategoryKind, FixedExpense, ThemeChoice } from '../../domain/types';
+import { KIND_LABELS, type Category, type CategoryKind, type FixedExpense, type ThemeChoice } from '../../domain/types';
 import { Breakpoint } from '../../shared/breakpoint';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
-import { Icon } from '../../shared/icon';
+import { Icon, kindIcon } from '../../shared/icon';
 import { MoneyInput, PercentInput } from '../../shared/money-input';
 import { Toast } from '../../shared/toast';
 import { ShellService } from '../../shell/shell.service';
@@ -44,6 +44,12 @@ export class Setari {
 
   protected readonly eur = formatEUR;
   protected readonly pct = formatPercent;
+  protected readonly kindIcon = kindIcon;
+  protected readonly kinds: { value: CategoryKind; label: string }[] = [
+    { value: 'saving', label: KIND_LABELS.saving },
+    { value: 'spending', label: KIND_LABELS.spending },
+    { value: 'investment', label: KIND_LABELS.investment },
+  ];
   protected readonly themes: { value: ThemeChoice; label: string }[] = [
     { value: 'auto', label: 'Automată' },
     { value: 'light', label: 'Luminoasă' },
@@ -75,7 +81,7 @@ export class Setari {
   protected readonly cError = signal<string | null>(null);
   protected readonly cDeleting = signal<Category | null>(null);
   protected readonly overflowOptions = computed(() =>
-    this.categories().filter((c) => c.kind === 'saving' && c.id !== this.cEditing()),
+    this.categories().filter((c) => c.kind !== 'spending' && c.id !== this.cEditing()),
   );
   protected readonly deleteCategoryBody = computed(() => {
     const category = this.cDeleting();
@@ -260,7 +266,7 @@ export class Setari {
       this.cError.set('Există deja o categorie cu acest nume.');
       return;
     }
-    if (d.kind === 'saving' && d.overflowToId && d.overflowToId === id) {
+    if (d.kind !== 'spending' && d.overflowToId && d.overflowToId === id) {
       this.cError.set('Alege alt fond decât acesta.');
       return;
     }
@@ -268,7 +274,7 @@ export class Setari {
       const existing = this.categories().find((c) => c.id === id);
       const balance = this.store.balances()[id] ?? 0;
       const hasMovements = this.store.movements().some((m) => m.categoryId === id);
-      if (existing?.kind === 'saving' && (balance !== 0 || hasMovements)) {
+      if (existing && existing.kind !== 'spending' && (balance !== 0 || hasMovements)) {
         this.cError.set('Fondul are sold sau mișcări și nu poate deveni buget de cheltuieli.');
         return;
       }
@@ -277,9 +283,9 @@ export class Setari {
       name,
       kind: d.kind,
       percent: d.percent,
-      targetCents: d.kind === 'saving' && d.targetCents > 0 ? d.targetCents : null,
-      overflowToId: d.kind === 'saving' ? d.overflowToId : null,
-      initialBalanceCents: d.kind === 'saving' ? d.initialBalanceCents : 0,
+      targetCents: d.kind !== 'spending' && d.targetCents > 0 ? d.targetCents : null,
+      overflowToId: d.kind !== 'spending' ? d.overflowToId : null,
+      initialBalanceCents: d.kind !== 'spending' ? d.initialBalanceCents : 0,
     };
     this.cError.set(null);
     const ok = await this.run(() => this.store.saveCategory(input, id).then(() => undefined));
@@ -334,9 +340,9 @@ export class Setari {
 
   protected caption(category: Category): string {
     if (category.kind === 'spending') {
-      return 'Buget de cheltuieli';
+      return KIND_LABELS.spending;
     }
-    const parts = ['Fond de economii'];
+    const parts = [KIND_LABELS[category.kind]];
     if (category.targetCents !== null) {
       parts.push(`țintă ${formatEUR(category.targetCents)}`);
     }
