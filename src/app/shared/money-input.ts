@@ -19,6 +19,8 @@ import { formatNumber, parseMoney, parsePercent } from '../domain/money';
 })
 export class MoneyInput {
   readonly cents = input.required<number>({ alias: 'buMoney' });
+  /** Optional field: 0 is shown as empty and empty text means 0. */
+  readonly optional = input(false);
   readonly centsChange = output<number>();
   readonly invalid = signal(false);
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef).nativeElement;
@@ -28,7 +30,7 @@ export class MoneyInput {
     effect(() => {
       const cents = this.cents();
       if (!this.editing) {
-        this.el.value = formatNumber(cents);
+        this.el.value = this.display(cents);
       }
     });
   }
@@ -46,18 +48,23 @@ export class MoneyInput {
   protected commit(): void {
     this.editing = false;
     try {
-      const parsed = parseMoney(this.el.value);
+      const empty = this.el.value.trim() === '';
+      const parsed = this.optional() && empty ? 0 : parseMoney(this.el.value);
       if (parsed < 0) {
         throw new Error('negative');
       }
-      this.el.value = formatNumber(parsed);
+      this.el.value = this.display(parsed);
       if (parsed !== this.cents()) {
         this.centsChange.emit(parsed);
       }
     } catch {
       this.invalid.set(true);
-      this.el.value = formatNumber(this.cents());
+      this.el.value = this.display(this.cents());
     }
+  }
+
+  private display(cents: number): string {
+    return this.optional() && cents === 0 ? '' : formatNumber(cents);
   }
 }
 

@@ -484,3 +484,16 @@ $motion: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease,
   .bu-scrim { place-items: center; padding: var(--space-8); }
   .bu-dialog { width: 360px; border-radius: var(--radius-xl); padding: var(--space-6); }
 }
+
+/* ---------- CDK drag and drop ---------- */
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+.cdk-drag-placeholder { opacity: 0.35; }
+.cdk-drag-animating { transition: transform 150ms ease; }
+.cdk-drop-list-dragging .bu-row:not(.cdk-drag-placeholder) { transition: transform 150ms ease; }

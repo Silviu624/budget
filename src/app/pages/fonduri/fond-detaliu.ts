@@ -115,6 +115,9 @@ export class FondDetaliu {
     return rows;
   });
 
+  /** Movements plus the starting balance; the planned contribution is not a movement yet. */
+  protected readonly historyCount = computed(() => this.history().filter((h) => h.kind !== 'planned').length);
+
   protected readonly amountCents = signal(0);
   protected readonly note = signal('');
   protected readonly error = signal<string | null>(null);

@@ -1,18 +1,24 @@
-# Budget
+# Buget
 
-A small web app for tracking household money: how much comes in each month and how it gets
-distributed. Two people share one account and see the same data.
+A shared monthly-budget web app for a couple with one login. Each month you enter one income,
+subtract the fixed expenses, and split what remains by percentages into saving buckets (with
+balances, targets and overflow) and spending buckets (monthly allowances). The UI is in Romanian,
+the currency is euro.
+
+Live site: https://silviu624.github.io/budget/
 
 Everything runs on free tiers, with no credit card required:
 
-| Piece      | Service                            | Why                                                            |
-| ---------- | ---------------------------------- | -------------------------------------------------------------- |
-| Frontend   | Angular 21 (standalone, zoneless)  | Static single-page app, no server to pay for                   |
-| Login      | Firebase Authentication            | Email + password, one shared household account                 |
-| Database   | Cloud Firestore (Firebase)         | Free Spark plan, never pauses, generous limits for 2 users     |
-| Hosting    | GitHub Pages                       | Free for public repos, deployed automatically by GitHub Actions |
+| Piece    | Service                                 | Why                                                          |
+| -------- | --------------------------------------- | ------------------------------------------------------------ |
+| Frontend | Angular 21 (standalone, zoneless)       | Static single-page app, no server to pay for                 |
+| Login    | Firebase Authentication                 | Email + password, one shared household account               |
+| Database | Cloud Firestore (Firebase)              | Free Spark plan, never pauses, live sync between your phones |
+| Hosting  | GitHub Pages                            | Free for public repos, deployed by GitHub Actions on push    |
 
-Live site (after the first deploy): https://silviu624.github.io/budget/
+The functional and visual specification is the design handoff in [docs/design](docs/design/)
+(start with [BUILD_BRIEF.md](docs/design/BUILD_BRIEF.md)); the project rules are in
+[CLAUDE.md](CLAUDE.md).
 
 ## Local development
 
@@ -27,52 +33,55 @@ Node 24 or newer is required.
 
 > **Note for Windows:** npm on Windows drops a few Linux-only optional packages from
 > `package-lock.json` every time you run `npm install`. That is harmless locally, but it is why
-> the deploy workflow uses `npm install` instead of the stricter `npm ci`.
+> the deploy workflow uses `npm install` instead of the stricter `npm ci`. In Git Bash, build with
+> `MSYS_NO_PATHCONV=1 npx ng build --base-href /budget/`, otherwise the base href is rewritten.
 
-## One-time Firebase setup
+## Firebase setup (done once)
 
-1. Go to https://console.firebase.google.com and **Add project** (name it `budget` or similar).
-   Google Analytics can be turned off. Stay on the free **Spark** plan.
-2. **Authentication** → Get started → Sign-in method → enable **Email/Password**.
-3. **Authentication** → Users → **Add user**: this is the shared household account. Choose the
-   email and password you will both use.
-4. **Authentication** → Settings → **User actions** → untick **Enable create (sign-up)** so
-   nobody else can register an account.
-5. **Firestore Database** → Create database → start in **production mode**, pick a region close
-   to you (for example `europe-west`).
-6. **Firestore Database** → Rules → paste the contents of [firestore.rules](firestore.rules),
-   replacing `you@example.com` with the household email from step 3 → **Publish**.
-   Only the console copy needs the real email; keep the placeholder in this public repo.
-   (Alternatively, with the Firebase CLI: `firebase login`, `firebase use <project-id>`,
-   `firebase deploy --only firestore:rules`.)
-7. **Project settings** (gear icon) → General → Your apps → **Add app** → Web (`</>`).
-   Register it (no hosting needed) and copy the `firebaseConfig` values into
-   [src/environments/environment.ts](src/environments/environment.ts).
-8. **Authentication** → Settings → **Authorized domains** → add `silviu624.github.io`.
+1. Create a Firebase project on the free **Spark** plan.
+2. **Authentication** → enable **Email/Password**, add the shared household user, and under
+   Settings → User actions untick **Enable create (sign-up)**.
+3. **Firestore Database** → create the `(default)` database in production mode.
+4. **Firestore Database** → Rules → paste [firestore.rules](firestore.rules) with the household
+   email in place of `you@example.com` → **Publish**. Only the console copy needs the real email;
+   keep the placeholder in this public repo.
+5. **Project settings** → Your apps → Web → copy the config into
+   [src/environments/environment.ts](src/environments/environment.ts). These values are safe to
+   commit: they only identify the project, access is controlled by Authentication and the rules.
 
-The values in `environment.ts` are safe to commit: they only identify the project, and access is
-controlled by Authentication plus the Firestore rules. Optional hardening: in Google Cloud
-console → APIs & Services → Credentials, restrict the browser API key to the
-`silviu624.github.io/*` and `localhost` referrers.
+On the first sign-in the app writes the default profile, expense template and categories (with
+zero balances). Adjust them in **Setări**: starting balances, targets, percentages, names.
+
+## How data is stored
+
+All money is integer euro cents. Firestore collections:
+
+```
+settings/profile     display name, default income, theme, fixed-expense template
+categories/{id}      name, kind (saving | spending), percent, target, overflow, initial balance, position
+months/{yyyy-mm}     income, status (planned | applied), fixed expenses, allocations (+ stored results once applied)
+movements/{id}       contributions posted by „Aplică luna” and withdrawals; a balance = initial + Σ movements
+```
+
+The allocation engine (shares with largest-remainder rounding, targets, overflow chains) lives in
+[src/app/domain](src/app/domain/) and is covered by unit tests that reproduce
+[expected-octombrie-2026.json](docs/design/design/expected-octombrie-2026.json) from the seed.
 
 ## Deployment
 
-Every push to `main` runs [.github/workflows/deploy.yml](.github/workflows/deploy.yml), which
-runs the tests, builds the app with `--base-href /budget/` and publishes `dist/budget/browser`
-to GitHub Pages. `index.html` is also copied to `404.html` so deep links such as `/budget/login`
-load the app instead of a GitHub 404 page.
-
-GitHub Pages must be set to deploy from **GitHub Actions**
-(repository Settings → Pages → Source).
+Every push to `main` runs [.github/workflows/deploy.yml](.github/workflows/deploy.yml): tests,
+production build with `--base-href /budget/`, `404.html` fallback for deep links, publish to
+GitHub Pages (Settings → Pages → Source: GitHub Actions).
 
 ## Project layout
 
 ```
-src/app/core/firebase.ts        Firebase app, Auth and Firestore instances
-src/app/core/auth.service.ts    Login / logout, current user as a signal
-src/app/core/auth.guard.ts      Route guards (authGuard, guestGuard)
-src/app/pages/login/            Sign-in page
-src/app/pages/dashboard/        Signed-in home page (features go here)
-src/environments/environment.ts Firebase web config
-firestore.rules                 Database access rules
+src/app/core/        Firebase init, auth service and guards, theme service
+src/app/data/        BudgetStore (live Firestore snapshots + every write), default data
+src/app/domain/      pure engine: money/percent formatting, dates, allocation, balances, months
+src/app/shared/      icon set, money/percent inputs, chips, meters, dialogs, toast
+src/app/shell/       app chrome (header, tab bar, sidebar, top bar, page slots)
+src/app/pages/       autentificare, sumar, fonduri (+ detaliu), istoric, setari
+src/styles/          design tokens and the component classes ported from the handoff
+docs/design/         the Claude Design handoff (spec, design system, artboards, seed)
 ```

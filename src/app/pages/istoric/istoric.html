@@ -1,0 +1,112 @@
+@let desktop = breakpoint.desktop();
+@let t = totals();
+
+@if (desktop) {
+  <div class="bu-grid3">
+    <section class="bu-card bu-kpi">
+      <span class="label bu-muted">Venit în {{ year() }}</span>
+      <span class="amount-lg bu-num">{{ eur(t.incomeCents) }}</span>
+      <span class="caption bu-muted">{{ t.countLabel }}@if (t.range) { · {{ t.range }}}</span>
+    </section>
+    <section class="bu-card bu-kpi">
+      <span class="label bu-muted">Cheltuieli fixe în {{ year() }}</span>
+      <span class="amount-lg bu-num">{{ eur(t.fixedCents) }}</span>
+      <span class="caption bu-muted">{{ t.countLabel }}@if (t.range) { · {{ t.range }}}</span>
+    </section>
+    <section class="bu-card bu-kpi">
+      <span class="label bu-muted">Rămas de împărțit în {{ year() }}</span>
+      <span class="amount-lg bu-num" [class.bu-pos]="t.remainderCents >= 0" [class.bu-neg]="t.remainderCents < 0">{{ eur(t.remainderCents) }}</span>
+      <span class="caption bu-muted">{{ t.countLabel }}@if (t.range) { · {{ t.range }}}</span>
+    </section>
+  </div>
+
+  <section class="bu-card">
+    <div class="bu-card-h">
+      <h2 class="title-2">Luni</h2>
+      <span class="caption bu-muted">Apasă pe o lună pentru a o deschide în Sumar</span>
+    </div>
+    @if (rows().length === 0) {
+      <p class="bu-card-b bu-muted">Încă nu există nicio lună. Prima lună se creează automat în Sumar.</p>
+    } @else {
+      <table class="bu-table">
+        <thead>
+          <tr>
+            <th>Lună</th>
+            <th class="r">Venit</th>
+            <th class="r">Cheltuieli</th>
+            <th class="r">Rămas</th>
+            <th>Stare</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of rows(); track r.key) {
+            <tr class="clickable" tabindex="0" (click)="open(r.key)" (keydown.enter)="open(r.key)">
+              <td>
+                <span class="body-strong">{{ r.label }}</span>
+                @if (r.current) {
+                  <span class="caption bu-muted"> · luna curentă</span>
+                }
+              </td>
+              <td class="r bu-num">{{ eur(r.incomeCents) }}</td>
+              <td class="r bu-num">{{ eur(r.fixedCents) }}</td>
+              <td class="r bu-num body-strong" [class.bu-pos]="r.remainderCents >= 0" [class.bu-neg]="r.remainderCents < 0">{{ eur(r.remainderCents) }}</td>
+              <td><bu-status-chip [status]="r.status" /></td>
+              <td class="r">
+                <span class="open">
+                  <span class="hint caption bu-accent">Deschide în Sumar</span>
+                  <bu-icon name="chevR" [size]="16" class="bu-muted" />
+                </span>
+              </td>
+            </tr>
+          }
+          <tr class="total">
+            <td>Total · {{ t.countLabel }}</td>
+            <td class="r bu-num">{{ eur(t.incomeCents) }}</td>
+            <td class="r bu-num">{{ eur(t.fixedCents) }}</td>
+            <td class="r bu-num" [class.bu-pos]="t.remainderCents >= 0" [class.bu-neg]="t.remainderCents < 0">{{ eur(t.remainderCents) }}</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    }
+  </section>
+} @else {
+  <div>
+    <h1 class="title-1">Istoric</h1>
+    <p class="bu-muted">Atinge o lună pentru a o deschide în Sumar.</p>
+  </div>
+
+  <section class="bu-card hero">
+    <span class="label bu-muted">Rămas de împărțit în {{ year() }}</span>
+    <span class="amount-xl bu-num" [class.bu-pos]="t.remainderCents >= 0" [class.bu-neg]="t.remainderCents < 0">{{ eur(t.remainderCents) }}</span>
+    <span class="caption bu-muted bu-num">{{ t.countLabel }} · venit {{ eur(t.incomeCents) }} · cheltuieli {{ eur(t.fixedCents) }}</span>
+  </section>
+
+  @if (rows().length === 0) {
+    <section class="bu-card empty"><p class="bu-muted">Încă nu există nicio lună. Prima lună se creează automat în Sumar.</p></section>
+  } @else {
+    <section class="bu-card">
+      @for (r of rows(); track r.key) {
+        <a class="mrow" [routerLink]="['/sumar', r.key]">
+          <div class="top">
+            <div class="titles">
+              <span class="title-2">{{ r.label }}</span>
+              @if (r.current) {
+                <span class="caption bu-muted">Luna curentă</span>
+              }
+            </div>
+            <bu-status-chip [status]="r.status" />
+            <bu-icon name="chevR" [size]="18" class="bu-muted" />
+          </div>
+          <div class="nums">
+            <div><span class="caption bu-muted">Venit</span><span class="bu-num">{{ eur(r.incomeCents) }}</span></div>
+            <div><span class="caption bu-muted">Cheltuieli</span><span class="bu-num">{{ eur(r.fixedCents) }}</span></div>
+            <div><span class="caption bu-muted">Rămas</span><span class="bu-num body-strong" [class.bu-pos]="r.remainderCents >= 0" [class.bu-neg]="r.remainderCents < 0">{{ eur(r.remainderCents) }}</span></div>
+          </div>
+        </a>
+      }
+    </section>
+  }
+}

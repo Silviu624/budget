@@ -1,0 +1,291 @@
+@let desktop = breakpoint.desktop();
+
+@if (!desktop) {
+  <h1 class="title-1">Setări</h1>
+}
+
+@if (error(); as message) {
+  <p class="caption bu-neg" role="alert">{{ message }}</p>
+}
+
+<div class="bu-cols">
+  <div class="bu-vstack">
+    <section class="bu-card">
+      <div class="bu-card-h tight"><h2 class="title-2">Venit implicit</h2></div>
+      <form class="bu-card-b form" (submit)="$event.preventDefault(); saveIncome()" novalidate>
+        <div class="bu-field">
+          <label class="lbl" for="default-income">Venit lunar</label>
+          <span class="bu-input right">
+            <input id="default-income" [buMoney]="incomeDraft()" (centsChange)="incomeDraft.set($event)" />
+            <span class="sfx">€</span>
+          </span>
+          <span class="hint">Se folosește la fiecare lună nouă; îl poți schimba lunar în Sumar.</span>
+        </div>
+        <div class="acts-right">
+          <button type="submit" class="bu-btn primary" [disabled]="incomeBusy()">Salvează</button>
+        </div>
+      </form>
+    </section>
+
+    @if (desktop) {
+      <ng-container *ngTemplateOutlet="themeCard" />
+    }
+
+    <section class="bu-card">
+      <div class="bu-card-h">
+        <div>
+          <h2 class="title-2">Șablon cheltuieli fixe</h2>
+          <p class="caption bu-muted">Precompletează fiecare lună nouă</p>
+        </div>
+        <button type="button" class="bu-btn ghost sm" (click)="startTemplateAdd()" [disabled]="tEditing() !== null">
+          <bu-icon name="plus" [size]="16" /><span>Adaugă</span>
+        </button>
+      </div>
+      <ul cdkDropList (cdkDropListDropped)="dropTemplate($event)">
+        @for (e of template(); track $index; let i = $index) {
+          <li class="bu-row" cdkDrag [cdkDragDisabled]="tEditing() !== null" [class.row-editing]="tEditing() === i">
+            @if (tEditing() === i) {
+              <div class="editor-head">
+                <span class="label title-3">Editează cheltuiala</span>
+                <span class="acts">
+                  <button type="button" class="bu-iconbtn bordered" (click)="moveTemplate(i, -1)" [disabled]="i === 0" aria-label="Mută sus"><bu-icon name="up" [size]="16" /></button>
+                  <button type="button" class="bu-iconbtn bordered" (click)="moveTemplate(i, 1)" [disabled]="i === template().length - 1" aria-label="Mută jos"><bu-icon name="down" [size]="16" /></button>
+                </span>
+              </div>
+              <ng-container *ngTemplateOutlet="templateEditor; context: { canDelete: true }" />
+            } @else {
+              <span class="grip" cdkDragHandle aria-hidden="true"><bu-icon name="grip" [size]="16" /></span>
+              <span class="bu-grow">{{ e.name }}</span>
+              <span class="bu-num">{{ eur(e.amountCents) }}</span>
+              <span class="acts">
+                <button type="button" class="bu-iconbtn" (click)="startTemplateEdit(i)" [attr.aria-label]="'Editează ' + e.name"><bu-icon name="pencil" [size]="16" /></button>
+                @if (desktop) {
+                  <button type="button" class="bu-iconbtn" (click)="askTemplateDelete(i)" [attr.aria-label]="'Șterge ' + e.name"><bu-icon name="trash" [size]="16" /></button>
+                }
+              </span>
+            }
+          </li>
+        }
+        @if (tEditing() === 'new') {
+          <li class="bu-row row-editing">
+            <span class="label title-3">Adaugă cheltuială</span>
+            <ng-container *ngTemplateOutlet="templateEditor; context: { canDelete: false }" />
+          </li>
+        }
+        <li class="bu-row total">
+          <span class="bu-grow label">Total</span>
+          <span class="body-strong bu-num">{{ eur(templateTotal()) }}</span>
+        </li>
+      </ul>
+    </section>
+  </div>
+
+  <div class="bu-vstack">
+    <section class="bu-card">
+      <div class="bu-card-h">
+        <div>
+          <h2 class="title-2">Categorii</h2>
+          <p class="caption bu-muted">Procente din rămas · trag de mâner pentru a reordona</p>
+        </div>
+        <button type="button" class="bu-btn ghost sm" (click)="startCategoryAdd()" [disabled]="cEditing() !== null">
+          <bu-icon name="plus" [size]="16" /><span>Adaugă</span>
+        </button>
+      </div>
+      <ul cdkDropList (cdkDropListDropped)="dropCategory($event)">
+        @if (cEditing() === 'new') {
+          <li class="bu-row row-editing">
+            <div class="editor-head">
+              <span class="bu-kind sm" [class.save]="draft().kind === 'saving'" [class.spend]="draft().kind === 'spending'">
+                <bu-icon [name]="draft().kind === 'saving' ? 'vault' : 'wallet'" [size]="16" />
+              </span>
+              <span class="title-3">{{ editorTitle() }}</span>
+            </div>
+            <ng-container *ngTemplateOutlet="categoryEditor; context: { canDelete: false }" />
+          </li>
+        }
+        @for (c of categories(); track c.id; let i = $index) {
+          <li class="bu-row" cdkDrag [cdkDragDisabled]="cEditing() !== null" [class.row-editing]="cEditing() === c.id">
+            @if (cEditing() === c.id) {
+              <div class="editor-head">
+                <span class="grip" aria-hidden="true"><bu-icon name="grip" [size]="16" /></span>
+                <span class="bu-kind sm" [class.save]="draft().kind === 'saving'" [class.spend]="draft().kind === 'spending'">
+                  <bu-icon [name]="draft().kind === 'saving' ? 'vault' : 'wallet'" [size]="16" />
+                </span>
+                <span class="title-3">{{ editorTitle() }}</span>
+                <span class="acts">
+                  <button type="button" class="bu-iconbtn bordered" (click)="moveCategory(c.id, -1)" [disabled]="i === 0" aria-label="Mută sus"><bu-icon name="up" [size]="16" /></button>
+                  <button type="button" class="bu-iconbtn bordered" (click)="moveCategory(c.id, 1)" [disabled]="i === categories().length - 1" aria-label="Mută jos"><bu-icon name="down" [size]="16" /></button>
+                </span>
+              </div>
+              <ng-container *ngTemplateOutlet="categoryEditor; context: { canDelete: true }" />
+            } @else {
+              <span class="grip" cdkDragHandle aria-hidden="true"><bu-icon name="grip" [size]="16" /></span>
+              <span class="bu-kind sm" [class.save]="c.kind === 'saving'" [class.spend]="c.kind === 'spending'">
+                <bu-icon [name]="c.kind === 'saving' ? 'vault' : 'wallet'" [size]="16" />
+              </span>
+              <span class="bu-grow stack">
+                <span class="name">{{ c.name }}</span>
+                <span class="caption bu-muted bu-num">{{ caption(c) }}</span>
+              </span>
+              <span class="pct bu-num">{{ pct(c.percent) }}</span>
+              <span class="acts">
+                <button type="button" class="bu-iconbtn" (click)="startCategoryEdit(c)" [attr.aria-label]="'Editează ' + c.name"><bu-icon name="pencil" [size]="16" /></button>
+                @if (desktop) {
+                  <button type="button" class="bu-iconbtn" (click)="askCategoryDelete(c)" [attr.aria-label]="'Șterge ' + c.name"><bu-icon name="trash" [size]="16" /></button>
+                }
+              </span>
+            }
+          </li>
+        }
+      </ul>
+      <div class="bu-card-f">
+        <span class="label">Total procente</span>
+        <span class="bu-hstack body-strong bu-num" [class.bu-neg]="percentTotal() > 100" [class.bu-muted]="percentTotal() < 100">
+          @if (percentTotal() === 100) {
+            <bu-icon name="check" [size]="16" class="bu-accent" />
+          }
+          {{ pct(percentTotal()) }}
+        </span>
+      </div>
+    </section>
+
+    @if (!desktop) {
+      <ng-container *ngTemplateOutlet="themeCard" />
+    }
+  </div>
+</div>
+
+<ng-template #themeCard>
+  <section class="bu-card">
+    <div class="bu-card-h tight"><h2 class="title-2">Temă</h2></div>
+    <div class="bu-card-b form">
+      <div class="bu-seg block" role="radiogroup" aria-label="Temă">
+        @for (t of themes; track t.value) {
+          <button type="button" role="radio" [attr.aria-checked]="theme.choice() === t.value" [class.on]="theme.choice() === t.value" (click)="setTheme(t.value)">
+            {{ t.label }}
+          </button>
+        }
+      </div>
+      <span class="hint">„Automată” urmează setarea dispozitivului.</span>
+    </div>
+  </section>
+</ng-template>
+
+<ng-template #templateEditor let-canDelete="canDelete">
+  <div class="fields-2">
+    <label class="bu-field">
+      <span class="lbl">Nume</span>
+      <span class="bu-input sm"><input [value]="tName()" (input)="tName.set($any($event.target).value)" autocomplete="off" /></span>
+    </label>
+    <label class="bu-field">
+      <span class="lbl">Sumă</span>
+      <span class="bu-input sm right"><input [buMoney]="tCents()" (centsChange)="tCents.set($event)" /><span class="sfx">€</span></span>
+    </label>
+  </div>
+  @if (tError(); as err) {
+    <p class="caption bu-neg" role="alert">{{ err }}</p>
+  }
+  <div class="bu-between">
+    @if (canDelete) {
+      <button type="button" class="bu-btn ghost neutral sm" (click)="askTemplateDeleteCurrent()"><bu-icon name="trash" [size]="16" /><span>Șterge</span></button>
+    } @else {
+      <span></span>
+    }
+    <span class="bu-hstack">
+      <button type="button" class="bu-btn secondary sm" (click)="cancelTemplate()">Anulează</button>
+      <button type="button" class="bu-btn primary sm" (click)="saveTemplate()">Salvează</button>
+    </span>
+  </div>
+</ng-template>
+
+<ng-template #categoryEditor let-canDelete="canDelete">
+  @let d = draft();
+  <div class="fields">
+    <label class="bu-field">
+      <span class="lbl">Nume</span>
+      <span class="bu-input"><input [value]="d.name" (input)="patchDraft({ name: $any($event.target).value })" autocomplete="off" /></span>
+    </label>
+    <div class="bu-field">
+      <span class="lbl">Tip</span>
+      <div class="bu-seg block" role="radiogroup" aria-label="Tip">
+        <button type="button" role="radio" [attr.aria-checked]="d.kind === 'saving'" [class.on]="d.kind === 'saving'" (click)="patchDraft({ kind: 'saving' })">
+          <bu-icon name="vault" [size]="16" /> Fond de economii
+        </button>
+        <button type="button" role="radio" [attr.aria-checked]="d.kind === 'spending'" [class.on]="d.kind === 'spending'" (click)="patchDraft({ kind: 'spending' })">
+          <bu-icon name="wallet" [size]="16" /> Buget de cheltuieli
+        </button>
+      </div>
+    </div>
+  </div>
+  <div [class.fields-4]="d.kind === 'saving'" [class.fields-2]="d.kind === 'spending'">
+    <label class="bu-field">
+      <span class="lbl">Procent</span>
+      <span class="bu-input right"><input [buPercent]="d.percent" (percentChange)="patchDraft({ percent: $event })" /><span class="sfx">%</span></span>
+    </label>
+    @if (d.kind === 'saving') {
+      <label class="bu-field">
+        <span class="lbl"><span>Țintă</span><span>Opțional</span></span>
+        <span class="bu-input right"><input [buMoney]="d.targetCents" [optional]="true" (centsChange)="patchDraft({ targetCents: $event })" /><span class="sfx">€</span></span>
+      </label>
+      <label class="bu-field">
+        <span class="lbl">Surplusul merge către</span>
+        <span class="bu-input">
+          <select [value]="d.overflowToId ?? ''" (change)="patchDraft({ overflowToId: $any($event.target).value || null })">
+            <option value="">—</option>
+            @for (o of overflowOptions(); track o.id) {
+              <option [value]="o.id">{{ o.name }}</option>
+            }
+          </select>
+          <bu-icon name="chevD" [size]="16" class="sfx" />
+        </span>
+      </label>
+      <label class="bu-field">
+        <span class="lbl">Sold inițial</span>
+        <span class="bu-input right"><input [buMoney]="d.initialBalanceCents" (centsChange)="patchDraft({ initialBalanceCents: $event })" /><span class="sfx">€</span></span>
+      </label>
+    }
+  </div>
+  @if (d.kind === 'saving') {
+    <span class="hint">
+      @if (desktop) {
+        Când soldul atinge ținta, partea acestui fond merge în categoria aleasă la „Surplusul merge către”.
+      } @else {
+        Când soldul atinge ținta, partea fondului merge aici.
+      }
+    </span>
+  }
+  @if (cError(); as err) {
+    <p class="caption bu-neg" role="alert">{{ err }}</p>
+  }
+  <div class="bu-between">
+    @if (canDelete) {
+      <button type="button" class="bu-btn ghost neutral sm" (click)="askCategoryDeleteCurrent()"><bu-icon name="trash" [size]="16" /><span>Șterge</span></button>
+    } @else {
+      <span></span>
+    }
+    <span class="bu-hstack">
+      <button type="button" class="bu-btn secondary sm" (click)="cancelCategory()">Anulează</button>
+      <button type="button" class="bu-btn primary sm" (click)="saveCategory()">Salvează</button>
+    </span>
+  </div>
+</ng-template>
+
+@if (tDeleting() !== null) {
+  <bu-confirm-dialog
+    [title]="templateDeleteTitle()"
+    body="Nu va mai fi precompletată în lunile noi."
+    confirmLabel="Șterge"
+    (confirmed)="confirmTemplateDelete()"
+    (cancelled)="tDeleting.set(null)"
+  />
+}
+
+@if (cDeleting(); as category) {
+  <bu-confirm-dialog
+    [title]="'Ștergi categoria „' + category.name + '”?'"
+    [body]="deleteCategoryBody()"
+    confirmLabel="Șterge"
+    (confirmed)="confirmCategoryDelete()"
+    (cancelled)="cDeleting.set(null)"
+  />
+}
