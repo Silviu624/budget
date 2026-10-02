@@ -1,0 +1,16 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Only the household account(s) may read or write anything.
+    // Put the email(s) you created in Firebase Authentication here.
+    function isHousehold() {
+      return request.auth != null
+        && request.auth.token.email in ['you@example.com'];
+    }
+
+    match /{document=**} {
+      allow read, write: if isHousehold();
+    }
+  }
+}
