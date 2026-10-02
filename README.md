@@ -25,6 +25,10 @@ npm run build      # production build into dist/budget/browser
 
 Node 24 or newer is required.
 
+> **Note for Windows:** npm on Windows drops a few Linux-only optional packages from
+> `package-lock.json` every time you run `npm install`. That is harmless locally, but it is why
+> the deploy workflow uses `npm install` instead of the stricter `npm ci`.
+
 ## One-time Firebase setup
 
 1. Go to https://console.firebase.google.com and **Add project** (name it `budget` or similar).
