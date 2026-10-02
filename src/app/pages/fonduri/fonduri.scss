@@ -1,0 +1,29 @@
+:host {
+  display: contents;
+}
+
+.hero {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.empty {
+  padding: var(--space-5);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.total {
+  background: var(--surface-sunken);
+  border-radius: 0 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px);
+}
+
+.bu-card > .bu-row:first-child {
+  border-top: 0;
+}

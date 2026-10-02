@@ -5,6 +5,7 @@ import { AuthService } from '../core/auth.service';
 import { ThemeService } from '../core/theme.service';
 import { BudgetStore } from '../data/budget-store';
 import { Icon, type IconName } from '../shared/icon';
+import { ToastHost } from '../shared/toast';
 import { ShellService } from './shell.service';
 
 interface NavItem {
@@ -23,7 +24,7 @@ export const NAV_ITEMS: NavItem[] = [
 /** App chrome: header + tab bar on mobile, sidebar + top bar from 960px. Pages render inside. */
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, NgTemplateOutlet, Icon],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, NgTemplateOutlet, Icon, ToastHost],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })

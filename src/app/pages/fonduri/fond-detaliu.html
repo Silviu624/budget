@@ -1,0 +1,147 @@
+@let desktop = breakpoint.desktop();
+@let c = category();
+
+<ng-template buTopSlot let-isDesktop="desktop">
+  @if (isDesktop) {
+    <nav class="crumbs" aria-label="Navigare">
+      <a routerLink="/fonduri">Fonduri</a>
+      <bu-icon name="chevR" [size]="16" />
+      <span class="title-2">{{ c?.name }}</span>
+    </nav>
+  } @else {
+    <nav class="backbar" aria-label="Navigare">
+      <a routerLink="/fonduri"><bu-icon name="chevL" [size]="18" /><span>Fonduri</span></a>
+    </nav>
+  }
+</ng-template>
+
+@if (c) {
+  <div class="bu-cols wide-right">
+    <div class="bu-vstack">
+      <section class="bu-card hero">
+        <div class="head">
+          <span class="bu-kind save"><bu-icon name="vault" [size]="18" /></span>
+          <div class="titles">
+            <h1 class="title-1">{{ c.name }}</h1>
+            <span class="caption bu-muted">Fond de economii · {{ pct(row()?.percent ?? c.percent) }} din rămas</span>
+          </div>
+        </div>
+        <div class="sold">
+          <span class="label bu-muted">Sold</span>
+          <span class="bu-num" [class.display]="desktop" [class.amount-xl]="!desktop">{{ eur(balance()) }}</span>
+        </div>
+        @if (c.targetCents !== null) {
+          <div class="bu-prog lg" role="progressbar" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="progress()">
+            <i [style.width.%]="progress()"></i>
+          </div>
+          <div class="bu-between caption bu-muted">
+            <span class="bu-num">{{ pct(percentOfTarget()) }} din țintă</span>
+            <span class="bu-num">Țintă <b>{{ eur(c.targetCents) }}</b></span>
+          </div>
+          @if (targetNote(); as note) {
+            <p class="bu-note"><bu-icon name="info" [size]="14" /><span>{{ note }}</span></p>
+          }
+        } @else {
+          <bu-target-progress [balance]="balance()" [target]="null" />
+        }
+      </section>
+
+      @if (!desktop) {
+        <ng-container *ngTemplateOutlet="withdraw" />
+        <ng-container *ngTemplateOutlet="settings" />
+      }
+
+      <section class="bu-card">
+        <div class="bu-card-h">
+          <h2 class="title-2">Istoric mișcări</h2>
+          <span class="caption bu-muted">{{ history().length }} mișcări@if (desktop) { · cele mai noi primele}</span>
+        </div>
+        @if (desktop) {
+          <table class="bu-table">
+            <thead>
+              <tr><th>Dată</th><th>Tip</th><th class="r">Sumă</th><th>Notă</th></tr>
+            </thead>
+            <tbody>
+              @for (h of history(); track $index) {
+                <tr [class.planned]="h.kind === 'planned'">
+                  <td class="bu-num" [class.bu-muted]="h.kind === 'planned'">{{ h.date }}</td>
+                  <td><span class="bu-chip neutral"><bu-icon [name]="chipIcon(h.kind)" [size]="14" />{{ chipLabel(h.kind) }}</span></td>
+                  <td class="r body-strong bu-num" [class.bu-pos]="h.kind === 'contribution'" [class.bu-neg]="h.kind === 'withdrawal'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</td>
+                  <td [class.bu-muted]="h.kind === 'planned'">{{ h.note }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          @for (h of history(); track $index) {
+            <div class="bu-mrow" [class.planned]="h.kind === 'planned'">
+              <div class="mrow-top">
+                <span class="bu-chip neutral"><bu-icon [name]="chipIcon(h.kind)" [size]="14" />{{ chipLabel(h.kind) }}</span>
+                <span class="date bu-num">{{ h.date }}</span>
+              </div>
+              <span class="body-strong bu-num" [class.bu-pos]="h.kind === 'contribution'" [class.bu-neg]="h.kind === 'withdrawal'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</span>
+              <span class="note" [class.bu-muted]="h.kind === 'planned'">{{ h.note }}</span>
+            </div>
+          }
+        }
+      </section>
+    </div>
+
+    @if (desktop) {
+      <div class="bu-vstack">
+        <ng-container *ngTemplateOutlet="withdraw" />
+        <ng-container *ngTemplateOutlet="settings" />
+      </div>
+    }
+  </div>
+}
+
+<ng-template #withdraw>
+  <section class="bu-card">
+    <div class="bu-card-h"><h2 class="title-2">Adaugă retragere</h2></div>
+    <form class="bu-card-b form" (submit)="$event.preventDefault(); submit()" novalidate>
+      <div class="bu-field">
+        <label class="lbl" for="withdraw-amount">Sumă</label>
+        <span class="bu-input lg right">
+          <input id="withdraw-amount" [buMoney]="amountCents()" (centsChange)="amountCents.set($event)" />
+          <span class="sfx">€</span>
+        </span>
+      </div>
+      <div class="bu-field">
+        <label class="lbl" for="withdraw-note"><span>Notă</span><span>Opțional</span></label>
+        <span class="bu-input">
+          <input id="withdraw-note" [value]="note()" (input)="note.set($any($event.target).value)" maxlength="120" autocomplete="off" />
+        </span>
+      </div>
+      <div class="preview">
+        <div><span class="bu-muted">Retragere</span><span class="body-strong bu-num bu-neg">{{ eur(-amountCents()) }}</span></div>
+        <div><span class="bu-muted">Sold după retragere</span><span class="body-strong bu-num">{{ eur(after()) }}</span></div>
+      </div>
+      @if (error(); as message) {
+        <p class="caption bu-neg" role="alert">{{ message }}</p>
+      }
+      <div class="acts">
+        <button type="button" class="bu-btn secondary" (click)="reset()">Anulează</button>
+        <button type="submit" class="bu-btn primary" [disabled]="busy()"><bu-icon name="check" [size]="18" /><span>Adaugă</span></button>
+      </div>
+    </form>
+  </section>
+</ng-template>
+
+<ng-template #settings>
+  @if (c) {
+    <section class="bu-card">
+      <div class="bu-card-h">
+        <h2 class="title-2">Setări fond</h2>
+        <a class="bu-btn ghost sm" routerLink="/setari" [queryParams]="{ categorie: c.id }"><bu-icon name="pencil" [size]="16" /><span>Editează</span></a>
+      </div>
+      <dl class="bu-dl bu-card-b">
+        <div><dt>Tip</dt><dd>Fond de economii</dd></div>
+        <div><dt>Procent</dt><dd class="bu-num">{{ pct(c.percent) }} din rămas</dd></div>
+        <div><dt>Țintă</dt><dd class="bu-num">{{ c.targetCents !== null ? eur(c.targetCents) : '—' }}</dd></div>
+        <div><dt>Surplusul merge către</dt><dd>{{ overflowName() ?? '—' }}</dd></div>
+        <div><dt>Sold inițial</dt><dd class="bu-num">{{ eur(c.initialBalanceCents) }}</dd></div>
+      </dl>
+    </section>
+  }
+</ng-template>

@@ -1,0 +1,136 @@
+@let desktop = breakpoint.desktop();
+@let v = view();
+
+@if (!desktop) {
+  <h1 class="title-1">Fonduri</h1>
+  <section class="bu-card hero">
+    <span class="label bu-muted">Total în fonduri</span>
+    <span class="amount-xl bu-num">{{ eur(totalFunds()) }}</span>
+    @if (v && planned()) {
+      <div class="bu-between caption">
+        <span class="bu-muted">Contribuții planificate în {{ monthName() }}</span>
+        <span class="bu-pos body-strong bu-num">{{ plus(v.savingPostedCents) }}</span>
+      </div>
+    }
+  </section>
+} @else {
+  <div class="bu-grid3">
+    <section class="bu-card bu-kpi">
+      <span class="label bu-muted">Total în fonduri</span>
+      <span class="amount-lg bu-num">{{ eur(totalFunds()) }}</span>
+      <span class="caption bu-muted">Sold actual în {{ saving().length }} fonduri de economii</span>
+    </section>
+    @if (v && planned()) {
+      <section class="bu-card bu-kpi">
+        <span class="label bu-muted">Contribuții planificate · {{ monthName() }}</span>
+        <span class="amount-lg bu-num bu-pos">{{ plus(v.savingPostedCents) }}</span>
+        <span class="caption bu-muted">Se adaugă la „Aplică luna”</span>
+      </section>
+    }
+    <section class="bu-card bu-kpi">
+      <span class="label bu-muted">Retrageri în {{ withdrawals().year }}</span>
+      <span class="amount-lg bu-num" [class.bu-neg]="withdrawals().totalCents < 0">{{ eur(withdrawals().totalCents) }}</span>
+      <span class="caption bu-muted">
+        {{ withdrawals().count }} retrageri@if (withdrawals().last) { · ultima pe {{ withdrawals().last }}}
+      </span>
+    </section>
+  </div>
+}
+
+<div class="bu-sec-h">
+  <h2 class="title-2">Fonduri de economii</h2>
+  <span class="caption bu-muted">
+    @if (desktop) {
+      Sold actual@if (planned()) { · contribuțiile din {{ monthName() }} sunt planificate}
+    } @else {
+      {{ saving().length }} fonduri
+    }
+  </span>
+</div>
+
+@if (saving().length === 0) {
+  <section class="bu-card empty"><p class="bu-muted">Nu ai încă fonduri de economii. Adaugă-le din Setări.</p></section>
+} @else {
+  <div class="bu-grid3">
+    @for (c of saving(); track c.id) {
+      @let r = row(c);
+      <a class="bu-card bu-fcard clickable" [routerLink]="['/fonduri', c.id]">
+        <div class="head">
+          <span class="bu-kind save"><bu-icon name="vault" [size]="18" /></span>
+          <span class="title-3 bu-grow">{{ c.name }}</span>
+          <bu-icon name="chevR" [size]="18" class="bu-muted" />
+        </div>
+        <div class="bu-between">
+          <span class="label bu-muted">Sold</span>
+          <span class="amount-lg bu-num">{{ eur(balance(c)) }}</span>
+        </div>
+        <bu-target-progress [balance]="balance(c)" [target]="c.targetCents" />
+        @if (r) {
+          <div class="foot">
+            <div class="bu-between caption">
+              <span class="bu-muted">{{ contributionLabel() }}</span>
+              <span class="bu-pos body-strong bu-num">{{ plus(r.postedCents) }}</span>
+            </div>
+            @if (r.targetReached && c.targetCents !== null && balance(c) < c.targetCents) {
+              <p class="bu-note"><bu-icon name="target" [size]="14" /><span>Atinge ținta în {{ monthName() }}</span></p>
+            }
+            @if (r.surplusToName) {
+              <p class="bu-note">
+                <bu-icon name="corner" [size]="14" />
+                <span>Surplusul merge către <b>{{ r.surplusToName }}</b>: <span class="bu-num">{{ eur(r.surplusOutCents) }}</span></span>
+              </p>
+            }
+            @if (r.surplusInCents > 0) {
+              <p class="bu-note">
+                <bu-icon name="corner" [size]="14" />
+                <span>Include <span class="bu-num">{{ eur(r.surplusInCents) }}</span> surplus din {{ r.surplusFromNames.join(', ') }}</span>
+              </p>
+            }
+          </div>
+        }
+      </a>
+    }
+  </div>
+}
+
+<div class="bu-sec-h">
+  <h2 class="title-2">Bugete de cheltuieli</h2>
+  <span class="caption bu-muted">@if (desktop) { Alocări pentru {{ monthTitle() }} · fără sold } @else { {{ monthTitle() }} }</span>
+</div>
+
+@if (desktop) {
+  <div class="bu-grid3">
+    @for (c of spending(); track c.id) {
+      @let r = row(c);
+      <section class="bu-card bu-fcard">
+        <div class="head">
+          <span class="bu-kind spend"><bu-icon name="wallet" [size]="18" /></span>
+          <span class="title-3 bu-grow">{{ c.name }}</span>
+        </div>
+        <div class="bu-between">
+          <span class="label bu-muted">Alocare</span>
+          <span class="amount-lg bu-num">{{ eur(r?.shareCents ?? 0) }}</span>
+        </div>
+        <span class="caption bu-muted">{{ pct(r?.percent ?? c.percent) }} din rămas · fără sold</span>
+      </section>
+    }
+  </div>
+} @else {
+  <section class="bu-card">
+    @for (c of spending(); track c.id) {
+      @let r = row(c);
+      <div class="bu-row">
+        <span class="bu-kind spend sm"><bu-icon name="wallet" [size]="16" /></span>
+        <div class="bu-grow stack">
+          <span>{{ c.name }}</span>
+          <span class="caption bu-muted">{{ pct(r?.percent ?? c.percent) }} din rămas · fără sold</span>
+        </div>
+        <span class="body-strong bu-num">{{ eur(r?.shareCents ?? 0) }}</span>
+      </div>
+    }
+    <div class="bu-row total">
+      <span class="bu-grow label">Total</span>
+      <span class="body-strong bu-num">{{ eur(v?.spendingSharesCents ?? 0) }}</span>
+    </div>
+  </section>
+}
