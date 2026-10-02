@@ -73,6 +73,12 @@
   gap: var(--space-3);
 }
 
+.fields-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
 .fields-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;

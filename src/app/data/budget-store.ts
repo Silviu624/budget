@@ -18,15 +18,17 @@ import { computeBalances } from '../domain/balances';
 import { addMonths, compareMonthKeys, monthLabel, todayISO } from '../domain/dates';
 import { formatEUR } from '../domain/money';
 import { activeByPosition, createPlannedMonth, reconcileAllocations } from '../domain/month';
-import { purchaseTotalCents } from '../domain/portfolio';
+import { buildPositions, normalizeSymbol, purchaseTotalCents, saleProceedsCents } from '../domain/portfolio';
 import type {
   Category,
   FixedExpense,
   Month,
   MonthAllocation,
   Movement,
+  MovementType,
+  Prices,
   Profile,
-  PurchaseDetails,
+  TradeDetails,
 } from '../domain/types';
 import { DEFAULT_PROFILE, defaultCategories } from './defaults';
 
@@ -39,6 +41,7 @@ export type CategoryInput = Pick<
 export const NETWORK_ERROR = 'Nu ne-am putut conecta. Încearcă din nou.';
 
 const profileRef = () => doc(db, 'settings', 'profile');
+const pricesRef = () => doc(db, 'settings', 'prices');
 const categoryRef = (id: string) => doc(db, 'categories', id);
 const monthRef = (key: string) => doc(db, 'months', key);
 const movementRef = (id: string) => doc(db, 'movements', id);
@@ -64,6 +67,8 @@ export class BudgetStore {
   readonly months = signal<Month[]>([]);
   /** Newest first. */
   readonly movements = signal<Movement[]>([]);
+  /** Latest known price per symbol, typed in on the Investiții page. */
+  readonly prices = signal<Prices>({});
   readonly error = signal<string | null>(null);
 
   readonly loaded = computed(
@@ -176,7 +181,10 @@ export class BudgetStore {
         (qs) => {
           this.movements.set(
             qs.docs
-              .map((d) => ({ id: d.id, ...(d.data() as Omit<Movement, 'id'>) }))
+              .map((d) => {
+                const data = d.data() as Omit<Movement, 'id'> & { purchase?: TradeDetails | null };
+                return { id: d.id, ...data, trade: data.trade ?? data.purchase ?? null };
+              })
               .sort(
                 (a, b) =>
                   b.occurredOn.localeCompare(a.occurredOn) || b.createdAt.localeCompare(a.createdAt),
@@ -184,6 +192,11 @@ export class BudgetStore {
           );
           this.movementsLoaded.set(true);
         },
+        fail,
+      ),
+      onSnapshot(
+        pricesRef(),
+        (snap) => this.prices.set(snap.exists() ? (snap.data() as Prices) : {}),
         fail,
       ),
     ];
@@ -198,6 +211,7 @@ export class BudgetStore {
     this.categories.set([]);
     this.months.set([]);
     this.movements.set([]);
+    this.prices.set({});
     this.error.set(null);
     this.profileLoaded.set(false);
     this.categoriesLoaded.set(false);
@@ -427,29 +441,50 @@ export class BudgetStore {
     await setDoc(doc(collection(db, 'movements')), movement);
   }
 
-  /** A purchase from an investment category: shares × price + fees leave its budget. */
-  async addPurchase(
+  /**
+   * A purchase (shares × price + fees leave the budget) or a sale (shares × price − fees come
+   * back) in an investment category.
+   */
+  async addTrade(
     categoryId: string,
-    details: PurchaseDetails,
+    type: Extract<MovementType, 'purchase' | 'sale'>,
+    details: TradeDetails,
     note: string,
     occurredOn: string,
   ): Promise<void> {
-    const total = purchaseTotalCents(details);
-    const balance = this.balances()[categoryId] ?? 0;
-    if (total > balance) {
-      throw new Error(`Suma depășește bugetul disponibil (${formatEUR(balance)}).`);
+    const trade: TradeDetails = { ...details, symbol: normalizeSymbol(details.symbol) };
+    let amountCents: number;
+    if (type === 'purchase') {
+      const total = purchaseTotalCents(trade);
+      const balance = this.balances()[categoryId] ?? 0;
+      if (total > balance) {
+        throw new Error(`Suma depășește bugetul disponibil (${formatEUR(balance)}).`);
+      }
+      amountCents = -total;
+    } else {
+      const held = buildPositions(this.movementsOf(categoryId)).find((p) => p.symbol === trade.symbol);
+      if (!held || held.shares < trade.shares) {
+        throw new Error(`Nu ai atâtea acțiuni ${trade.symbol} în acest fond.`);
+      }
+      amountCents = saleProceedsCents(trade);
     }
     const movement: Omit<Movement, 'id'> = {
       categoryId,
-      type: 'purchase',
-      amountCents: -total,
+      type,
+      amountCents,
       occurredOn,
       note: note.trim(),
       monthKey: null,
       createdAt: new Date().toISOString(),
-      purchase: details,
+      trade,
     };
     await setDoc(doc(collection(db, 'movements')), movement);
+  }
+
+  /** Remembers the current price of a symbol for the portfolio value. */
+  async savePrice(symbol: string, priceCents: number): Promise<void> {
+    const key = normalizeSymbol(symbol);
+    await setDoc(pricesRef(), { [key]: { priceCents, updatedOn: this.today() } }, { merge: true });
   }
 
   async deleteMovement(id: string): Promise<void> {

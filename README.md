@@ -61,8 +61,9 @@ All money is integer euro cents. Firestore collections:
 settings/profile     display name, default income, theme, fixed-expense template
 categories/{id}      name, kind (saving | spending | investment), percent, target, overflow, initial balance, position
 months/{yyyy-mm}     income, status (planned | applied), fixed expenses, allocations (+ stored results once applied)
-movements/{id}       contributions posted by „Aplică luna”, withdrawals and purchases (symbol, shares,
-                     price, fees); a balance = initial + Σ movements
+movements/{id}       contributions posted by „Aplică luna”, withdrawals, purchases and sales (symbol,
+                     shares, price, fees); a balance = initial + Σ movements
+settings/prices      latest price per symbol, typed in on Investiții for the portfolio value
 ```
 
 The allocation engine (shares with largest-remainder rounding, targets, overflow chains) lives in

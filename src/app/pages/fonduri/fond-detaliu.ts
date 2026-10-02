@@ -18,7 +18,7 @@ import { buildMonthView } from '../sumar/month-view';
 
 /** One line of „Istoric mișcări”: a movement, the planned contribution, or the starting balance. */
 interface HistoryRow {
-  kind: 'contribution' | 'withdrawal' | 'purchase' | 'initial' | 'planned';
+  kind: 'contribution' | 'withdrawal' | 'purchase' | 'sale' | 'initial' | 'planned';
   date: string;
   amountCents: number;
   note: string;
@@ -109,8 +109,8 @@ export class FondDetaliu {
     }
     for (const m of this.store.movementsOf(category.id)) {
       let note = m.note;
-      if (m.type === 'purchase' && m.purchase) {
-        const p = m.purchase;
+      if ((m.type === 'purchase' || m.type === 'sale') && m.trade) {
+        const p = m.trade;
         note = `${p.symbol} · ${formatShares(p.shares)} × ${formatEUR(p.priceCents)}`;
         if (p.feesCents > 0) {
           note += ` · taxe ${formatEUR(p.feesCents)}`;
@@ -160,7 +160,9 @@ export class FondDetaliu {
       case 'withdrawal':
         return 'Retragere';
       case 'purchase':
-        return 'Achiziție';
+        return 'Cumpărare';
+      case 'sale':
+        return 'Vânzare';
       case 'initial':
         return 'Sold inițial';
       default:

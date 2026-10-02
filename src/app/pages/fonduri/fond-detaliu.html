@@ -69,7 +69,7 @@
                 <tr [class.planned]="h.kind === 'planned'">
                   <td class="bu-num" [class.bu-muted]="h.kind === 'planned'">{{ h.date }}</td>
                   <td><span class="bu-chip neutral"><bu-icon [name]="chipIcon(h.kind)" [size]="14" />{{ chipLabel(h.kind) }}</span></td>
-                  <td class="r body-strong bu-num" [class.bu-pos]="h.kind === 'contribution'" [class.bu-neg]="h.kind === 'withdrawal' || h.kind === 'purchase'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</td>
+                  <td class="r body-strong bu-num" [class.bu-pos]="h.kind === 'contribution' || h.kind === 'sale'" [class.bu-neg]="h.kind === 'withdrawal' || h.kind === 'purchase'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</td>
                   <td [class.bu-muted]="h.kind === 'planned'">{{ h.note }}</td>
                 </tr>
               }
@@ -82,7 +82,7 @@
                 <span class="bu-chip neutral"><bu-icon [name]="chipIcon(h.kind)" [size]="14" />{{ chipLabel(h.kind) }}</span>
                 <span class="date bu-num">{{ h.date }}</span>
               </div>
-              <span class="body-strong bu-num" [class.bu-pos]="h.kind === 'contribution'" [class.bu-neg]="h.kind === 'withdrawal' || h.kind === 'purchase'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</span>
+              <span class="body-strong bu-num" [class.bu-pos]="h.kind === 'contribution' || h.kind === 'sale'" [class.bu-neg]="h.kind === 'withdrawal' || h.kind === 'purchase'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</span>
               <span class="note" [class.bu-muted]="h.kind === 'planned'">{{ h.note }}</span>
             </div>
           }

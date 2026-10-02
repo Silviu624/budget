@@ -200,14 +200,14 @@
 
 <ng-template #categoryEditor let-canDelete="canDelete">
   @let d = draft();
-  <div class="fields">
+  <div class="fields-stack">
     <label class="bu-field">
       <span class="lbl">Nume</span>
       <span class="bu-input"><input [value]="d.name" (input)="patchDraft({ name: $any($event.target).value })" autocomplete="off" /></span>
     </label>
     <div class="bu-field">
       <span class="lbl">Tip</span>
-      <div class="bu-seg block" role="radiogroup" aria-label="Tip">
+      <div class="bu-seg block wrap" role="radiogroup" aria-label="Tip">
         @for (k of kinds; track k.value) {
           <button type="button" role="radio" [attr.aria-checked]="d.kind === k.value" [class.on]="d.kind === k.value" (click)="patchDraft({ kind: k.value })">
             <bu-icon [name]="kindIcon(k.value)" [size]="16" /> {{ k.label }}

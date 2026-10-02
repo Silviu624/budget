@@ -1,47 +1,75 @@
-import type { Movement, PurchaseDetails } from './types';
+import type { Movement, Prices, TradeDetails } from './types';
 
 /** Shares × price, rounded to cents. */
-export function purchaseValueCents(details: PurchaseDetails): number {
+export function tradeValueCents(details: TradeDetails): number {
   return Math.round(details.shares * details.priceCents);
 }
 
-/** What leaves the investment budget: shares × price + fees. */
-export function purchaseTotalCents(details: PurchaseDetails): number {
-  return purchaseValueCents(details) + details.feesCents;
+/** What leaves the budget on a purchase: shares × price + fees. */
+export function purchaseTotalCents(details: TradeDetails): number {
+  return tradeValueCents(details) + details.feesCents;
+}
+
+/** What comes back on a sale: shares × price − fees. */
+export function saleProceedsCents(details: TradeDetails): number {
+  return tradeValueCents(details) - details.feesCents;
 }
 
 export interface Position {
   symbol: string;
+  /** Shares currently held. */
   shares: number;
-  /** Shares × price over every purchase, without fees. */
-  costCents: number;
-  feesCents: number;
+  /** Average purchase price, weighted by shares, over every purchase ever made. */
   averagePriceCents: number;
+  /** Shares held × average purchase price. */
+  costCents: number;
+  /** Fees of every purchase and sale. */
+  feesCents: number;
+  boughtShares: number;
+  soldShares: number;
 }
 
-/** Holdings per symbol, largest cost first. */
+/** Holdings per symbol (symbols fully sold are kept with 0 shares), largest cost first. */
 export function buildPositions(movements: readonly Movement[]): Position[] {
-  const bySymbol = new Map<string, Position>();
-  for (const m of movements) {
-    if (m.type !== 'purchase' || !m.purchase) {
-      continue;
-    }
-    const symbol = normalizeSymbol(m.purchase.symbol);
-    const position = bySymbol.get(symbol) ?? {
+  const bySymbol = new Map<string, Position & { boughtCostCents: number }>();
+  const trades = movements
+    .filter((m) => (m.type === 'purchase' || m.type === 'sale') && m.trade)
+    .sort((a, b) => a.occurredOn.localeCompare(b.occurredOn) || a.createdAt.localeCompare(b.createdAt));
+  for (const m of trades) {
+    const t = m.trade!;
+    const symbol = normalizeSymbol(t.symbol);
+    const p = bySymbol.get(symbol) ?? {
       symbol,
       shares: 0,
+      averagePriceCents: 0,
       costCents: 0,
       feesCents: 0,
-      averagePriceCents: 0,
+      boughtShares: 0,
+      soldShares: 0,
+      boughtCostCents: 0,
     };
-    position.shares = roundShares(position.shares + m.purchase.shares);
-    position.costCents += purchaseValueCents(m.purchase);
-    position.feesCents += m.purchase.feesCents;
-    bySymbol.set(symbol, position);
+    p.feesCents += t.feesCents;
+    if (m.type === 'purchase') {
+      p.boughtShares = roundShares(p.boughtShares + t.shares);
+      p.boughtCostCents += tradeValueCents(t);
+      p.shares = roundShares(p.shares + t.shares);
+    } else {
+      p.soldShares = roundShares(p.soldShares + t.shares);
+      p.shares = roundShares(Math.max(0, p.shares - t.shares));
+    }
+    p.averagePriceCents = p.boughtShares > 0 ? Math.round(p.boughtCostCents / p.boughtShares) : 0;
+    p.costCents = Math.round(p.shares * p.averagePriceCents);
+    bySymbol.set(symbol, p);
   }
   return [...bySymbol.values()]
-    .map((p) => ({ ...p, averagePriceCents: p.shares > 0 ? Math.round(p.costCents / p.shares) : 0 }))
-    .sort((a, b) => b.costCents - a.costCents);
+    .map(({ boughtCostCents: _ignored, ...p }) => p)
+    .sort((a, b) => b.costCents - a.costCents || a.symbol.localeCompare(b.symbol));
+}
+
+/** Shares × current price, or × average purchase price when no current price is known. */
+export function positionValueCents(position: Position, prices: Prices): number {
+  const price = prices[position.symbol]?.priceCents ?? position.averagePriceCents;
+  return Math.round(position.shares * price);
 }
 
 export function normalizeSymbol(symbol: string): string {

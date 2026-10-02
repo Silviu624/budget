@@ -64,10 +64,10 @@ export interface Month {
   allocations: MonthAllocation[];
 }
 
-export type MovementType = 'contribution' | 'withdrawal' | 'purchase';
+export type MovementType = 'contribution' | 'withdrawal' | 'purchase' | 'sale';
 
-/** What was bought from an investment category: shares of one symbol at one price, plus fees. */
-export interface PurchaseDetails {
+/** A trade in an investment category: shares of one symbol at one price, plus fees. */
+export interface TradeDetails {
   symbol: string;
   /** May be fractional (up to 6 decimals). */
   shares: number;
@@ -79,7 +79,7 @@ export interface Movement {
   id: string;
   categoryId: string;
   type: MovementType;
-  /** Signed: contributions positive, withdrawals and purchases negative. */
+  /** Signed: contributions and sales positive, withdrawals and purchases negative. */
   amountCents: number;
   /** ISO date (yyyy-mm-dd). */
   occurredOn: string;
@@ -88,9 +88,18 @@ export interface Movement {
   monthKey: string | null;
   /** ISO date-time. */
   createdAt: string;
-  /** Set for purchases. */
-  purchase?: PurchaseDetails | null;
+  /** Set for purchases and sales. */
+  trade?: TradeDetails | null;
 }
+
+/** The latest known price of a symbol, typed in by the household. */
+export interface SymbolPrice {
+  priceCents: number;
+  /** ISO date (yyyy-mm-dd). */
+  updatedOn: string;
+}
+
+export type Prices = Record<string, SymbolPrice>;
 
 export type ThemeChoice = 'auto' | 'light' | 'dark';
 

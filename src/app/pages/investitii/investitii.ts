@@ -3,16 +3,19 @@ import { Component, computed, inject, linkedSignal, signal } from '@angular/core
 import { RouterLink } from '@angular/router';
 import { BudgetStore, NETWORK_ERROR } from '../../data/budget-store';
 import { formatDate } from '../../domain/dates';
-import { formatEUR } from '../../domain/money';
+import { formatEUR, formatPercent } from '../../domain/money';
 import {
   buildPositions,
   formatShares,
   normalizeSymbol,
   parseShares,
+  positionValueCents,
   purchaseTotalCents,
-  purchaseValueCents,
+  saleProceedsCents,
+  tradeValueCents,
+  type Position,
 } from '../../domain/portfolio';
-import type { Movement, PurchaseDetails } from '../../domain/types';
+import type { Movement, TradeDetails } from '../../domain/types';
 import { Breakpoint } from '../../shared/breakpoint';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
 import { Icon } from '../../shared/icon';
@@ -20,7 +23,9 @@ import { MoneyInput } from '../../shared/money-input';
 import { Toast } from '../../shared/toast';
 import { ShellService } from '../../shell/shell.service';
 
-/** Investiții: the investment budget, what was bought with it, and the resulting holdings. */
+type TradeType = 'purchase' | 'sale';
+
+/** Investiții: the investment budget, the trades made with it, and the resulting portfolio. */
 @Component({
   selector: 'app-investitii',
   imports: [NgTemplateOutlet, RouterLink, Icon, MoneyInput, ConfirmDialog],
@@ -33,6 +38,7 @@ export class Investitii {
   private readonly toast = inject(Toast);
 
   protected readonly eur = formatEUR;
+  protected readonly pct = formatPercent;
   protected readonly date = formatDate;
   protected readonly shares = formatShares;
 
@@ -41,27 +47,35 @@ export class Investitii {
     this.store.activeCategories().filter((c) => c.kind === 'investment'),
   );
   protected readonly fundId = linkedSignal(() => this.funds()[0]?.id ?? null);
-  protected readonly fund = computed(() => this.funds().find((f) => f.id === this.fundId()) ?? null);
-  protected readonly purchases = computed(() => {
+  protected readonly trades = computed(() => {
     const ids = new Set(this.funds().map((f) => f.id));
-    return this.store.movements().filter((m) => m.type === 'purchase' && m.purchase && ids.has(m.categoryId));
+    return this.store
+      .movements()
+      .filter((m) => (m.type === 'purchase' || m.type === 'sale') && m.trade && ids.has(m.categoryId));
   });
   protected readonly availableCents = computed(() =>
     this.funds().reduce((sum, f) => sum + (this.store.balances()[f.id] ?? 0), 0),
   );
-  protected readonly investedCents = computed(() =>
-    this.purchases().reduce((sum, m) => sum + purchaseValueCents(m.purchase!), 0),
+  protected readonly positions = computed(() => buildPositions(this.trades()));
+  protected readonly held = computed(() => this.positions().filter((p) => p.shares > 0));
+  protected readonly costCents = computed(() => this.held().reduce((sum, p) => sum + p.costCents, 0));
+  protected readonly valueCents = computed(() =>
+    this.held().reduce((sum, p) => sum + positionValueCents(p, this.store.prices()), 0),
+  );
+  protected readonly gainCents = computed(() => this.valueCents() - this.costCents());
+  protected readonly hasPrices = computed(() =>
+    this.held().some((p) => this.store.prices()[p.symbol] !== undefined),
   );
   protected readonly feesCents = computed(() =>
-    this.purchases().reduce((sum, m) => sum + m.purchase!.feesCents, 0),
+    this.trades().reduce((sum, m) => sum + m.trade!.feesCents, 0),
   );
-  protected readonly positions = computed(() => buildPositions(this.purchases()));
 
   // ----------------------------------------------------------------- form
+  protected readonly mode = signal<TradeType>('purchase');
   protected readonly symbol = signal('');
   protected readonly sharesText = signal('');
   protected readonly priceCents = signal(0);
-  protected readonly purchaseFeesCents = signal(0);
+  protected readonly tradeFeesCents = signal(0);
   protected readonly occurredOn = linkedSignal(() => this.store.today());
   protected readonly note = signal('');
   protected readonly error = signal<string | null>(null);
@@ -74,10 +88,24 @@ export class Investitii {
       return 0;
     }
   });
-  protected readonly valueCents = computed(() => Math.round(this.sharesValue() * this.priceCents()));
-  protected readonly totalCents = computed(() => this.valueCents() + this.purchaseFeesCents());
+  protected readonly tradeValue = computed(() => Math.round(this.sharesValue() * this.priceCents()));
+  /** Money leaving (purchase) or entering (sale) the budget. */
+  protected readonly tradeTotal = computed(() =>
+    this.mode() === 'purchase'
+      ? this.tradeValue() + this.tradeFeesCents()
+      : Math.max(0, this.tradeValue() - this.tradeFeesCents()),
+  );
   protected readonly fundBalance = computed(() => this.store.balances()[this.fundId() ?? ''] ?? 0);
-  protected readonly afterCents = computed(() => this.fundBalance() - this.totalCents());
+  protected readonly afterCents = computed(() =>
+    this.mode() === 'purchase'
+      ? this.fundBalance() - this.tradeTotal()
+      : this.fundBalance() + this.tradeTotal(),
+  );
+  /** Symbols currently held in the selected fund, for the sale form. */
+  protected readonly heldInFund = computed(() => {
+    const id = this.fundId();
+    return id ? buildPositions(this.store.movementsOf(id)).filter((p) => p.shares > 0) : [];
+  });
 
   protected readonly deleting = signal<Movement | null>(null);
 
@@ -89,11 +117,43 @@ export class Investitii {
     return this.store.categoryById(id)?.name ?? '';
   }
 
+  protected priceOf(position: Position): number {
+    return this.store.prices()[position.symbol]?.priceCents ?? 0;
+  }
+
+  protected valueOf(position: Position): number {
+    return positionValueCents(position, this.store.prices());
+  }
+
+  protected gainOf(position: Position): number | null {
+    return this.store.prices()[position.symbol] ? this.valueOf(position) - position.costCents : null;
+  }
+
+  protected gainText(gainCents: number, costCents: number): string {
+    const percent = costCents > 0 ? (gainCents / costCents) * 100 : 0;
+    const sign = gainCents >= 0 ? '+' : '';
+    return `${formatEUR(gainCents, { sign: true })} (${sign}${formatPercent(percent)})`;
+  }
+
+  protected async setPrice(position: Position, priceCents: number): Promise<void> {
+    try {
+      await this.store.savePrice(position.symbol, priceCents);
+    } catch (err) {
+      console.error(err);
+      this.error.set(NETWORK_ERROR);
+    }
+  }
+
+  protected setMode(mode: TradeType): void {
+    this.mode.set(mode);
+    this.error.set(null);
+  }
+
   protected reset(): void {
     this.symbol.set('');
     this.sharesText.set('');
     this.priceCents.set(0);
-    this.purchaseFeesCents.set(0);
+    this.tradeFeesCents.set(0);
     this.note.set('');
     this.error.set(null);
   }
@@ -119,21 +179,37 @@ export class Investitii {
       this.error.set('Prețul trebuie să fie mai mare decât 0.');
       return;
     }
-    const details: PurchaseDetails = {
+    const details: TradeDetails = {
       symbol,
       shares,
       priceCents: this.priceCents(),
-      feesCents: this.purchaseFeesCents(),
+      feesCents: this.tradeFeesCents(),
     };
-    if (purchaseTotalCents(details) > this.fundBalance()) {
-      this.error.set(`Suma depășește bugetul disponibil (${formatEUR(this.fundBalance())}).`);
-      return;
+    if (this.mode() === 'purchase') {
+      if (purchaseTotalCents(details) > this.fundBalance()) {
+        this.error.set(`Suma depășește bugetul disponibil (${formatEUR(this.fundBalance())}).`);
+        return;
+      }
+    } else {
+      const held = this.heldInFund().find((p) => p.symbol === symbol);
+      if (!held || held.shares < shares) {
+        this.error.set(
+          held
+            ? `Nu ai atâtea acțiuni ${symbol} (deții ${formatShares(held.shares)}).`
+            : `Nu ai acțiuni ${symbol} în acest fond.`,
+        );
+        return;
+      }
+      if (saleProceedsCents(details) < 0) {
+        this.error.set('Taxele depășesc valoarea vânzării.');
+        return;
+      }
     }
     this.busy.set(true);
     try {
-      await this.store.addPurchase(fundId, details, this.note(), this.occurredOn());
+      await this.store.addTrade(fundId, this.mode(), details, this.note(), this.occurredOn());
       this.reset();
-      this.toast.show('Achiziția a fost adăugată.');
+      this.toast.show(this.mode() === 'purchase' ? 'Cumpărarea a fost adăugată.' : 'Vânzarea a fost adăugată.');
     } catch (err) {
       this.error.set(err instanceof Error && err.message ? err.message : NETWORK_ERROR);
     } finally {
@@ -143,12 +219,17 @@ export class Investitii {
 
   protected deleteTitle(): string {
     const m = this.deleting();
-    return m?.purchase ? `Ștergi achiziția „${m.purchase.symbol}” din ${formatDate(m.occurredOn)}?` : '';
+    return m?.trade ? `Ștergi tranzacția „${m.trade.symbol}” din ${formatDate(m.occurredOn)}?` : '';
   }
 
   protected deleteBody(): string {
     const m = this.deleting();
-    return m ? `Suma de ${formatEUR(-m.amountCents)} se întoarce în bugetul disponibil.` : '';
+    if (!m) {
+      return '';
+    }
+    return m.type === 'purchase'
+      ? `Suma de ${formatEUR(-m.amountCents)} se întoarce în bugetul disponibil.`
+      : `Suma de ${formatEUR(m.amountCents)} se scade din bugetul disponibil.`;
   }
 
   protected async confirmDelete(): Promise<void> {
@@ -159,19 +240,27 @@ export class Investitii {
     this.deleting.set(null);
     try {
       await this.store.deleteMovement(m.id);
-      this.toast.show('Achiziția a fost ștearsă.');
+      this.toast.show('Tranzacția a fost ștearsă.');
     } catch (err) {
       console.error(err);
       this.error.set(NETWORK_ERROR);
     }
   }
 
-  protected purchaseLine(m: Movement): string {
-    const p = m.purchase!;
-    let text = `${formatShares(p.shares)} × ${formatEUR(p.priceCents)}`;
-    if (p.feesCents > 0) {
-      text += ` · taxe ${formatEUR(p.feesCents)}`;
+  protected tradeLabel(m: Movement): string {
+    return m.type === 'sale' ? 'Vânzare' : 'Cumpărare';
+  }
+
+  protected tradeLine(m: Movement): string {
+    const t = m.trade!;
+    let text = `${formatShares(t.shares)} × ${formatEUR(t.priceCents)}`;
+    if (t.feesCents > 0) {
+      text += ` · taxe ${formatEUR(t.feesCents)}`;
     }
     return text;
+  }
+
+  protected tradeValueOf(m: Movement): number {
+    return tradeValueCents(m.trade!);
   }
 }

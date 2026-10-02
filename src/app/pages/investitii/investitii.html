@@ -18,21 +18,39 @@
         <span class="caption bu-muted">{{ funds().length === 1 ? funds()[0].name : funds().length + ' fonduri' }}</span>
       </section>
       <section class="bu-card bu-kpi">
-        <span class="label bu-muted">Investit</span>
-        <span class="amount-lg bu-num">{{ eur(investedCents()) }}</span>
-        <span class="caption bu-muted">{{ purchases().length }} achiziții · {{ positions().length }} simboluri</span>
+        <span class="label bu-muted">Valoare portofoliu</span>
+        <span class="amount-lg bu-num">{{ eur(valueCents()) }}</span>
+        <span class="caption bu-muted bu-num">
+          Investit {{ eur(costCents()) }} ·
+          @if (hasPrices()) {
+            <span [class.bu-pos]="gainCents() >= 0" [class.bu-neg]="gainCents() < 0">{{ gainText(gainCents(), costCents()) }}</span>
+          } @else {
+            la prețul mediu de cumpărare
+          }
+        </span>
       </section>
       <section class="bu-card bu-kpi">
         <span class="label bu-muted">Taxe plătite</span>
         <span class="amount-lg bu-num">{{ eur(feesCents()) }}</span>
-        <span class="caption bu-muted">Comisioane incluse în achiziții</span>
+        <span class="caption bu-muted">{{ trades().length }} tranzacții · {{ held().length }} simboluri</span>
       </section>
     </div>
   } @else {
     <section class="bu-card hero">
       <span class="label bu-muted">Buget disponibil</span>
       <span class="amount-xl bu-num">{{ eur(availableCents()) }}</span>
-      <span class="caption bu-muted bu-num">Investit {{ eur(investedCents()) }} · taxe {{ eur(feesCents()) }}</span>
+      <div class="bu-between caption bu-num">
+        <span class="bu-muted">Valoare portofoliu</span>
+        <span class="body-strong">{{ eur(valueCents()) }}</span>
+      </div>
+      <div class="bu-between caption bu-num">
+        <span class="bu-muted">Investit {{ eur(costCents()) }}</span>
+        @if (hasPrices()) {
+          <span [class.bu-pos]="gainCents() >= 0" [class.bu-neg]="gainCents() < 0">{{ gainText(gainCents(), costCents()) }}</span>
+        } @else {
+          <span class="bu-muted">taxe {{ eur(feesCents()) }}</span>
+        }
+      </div>
     </section>
   }
 
@@ -44,36 +62,74 @@
 
       <section class="bu-card">
         <div class="bu-card-h">
-          <h2 class="title-2">Portofoliu</h2>
-          <span class="caption bu-muted">{{ positions().length }} simboluri</span>
+          <div>
+            <h2 class="title-2">Portofoliu</h2>
+            <p class="caption bu-muted">Scrie prețul curent ca să vezi valoarea și câștigul</p>
+          </div>
+          <span class="caption bu-muted">{{ held().length }} simboluri</span>
         </div>
-        @if (positions().length === 0) {
-          <p class="bu-card-b bu-muted">Nicio achiziție încă.</p>
+        @if (held().length === 0) {
+          <p class="bu-card-b bu-muted">Nicio acțiune deținută încă.</p>
         } @else if (desktop) {
           <table class="bu-table">
             <thead>
-              <tr><th>Simbol</th><th class="r">Acțiuni</th><th class="r">Preț mediu</th><th class="r">Taxe</th><th class="r">Investit</th></tr>
+              <tr>
+                <th>Simbol</th>
+                <th class="r">Acțiuni</th>
+                <th class="r">Preț mediu</th>
+                <th class="r">Preț curent</th>
+                <th class="r">Valoare</th>
+                <th class="r">Câștig</th>
+              </tr>
             </thead>
             <tbody>
-              @for (p of positions(); track p.symbol) {
+              @for (p of held(); track p.symbol) {
                 <tr>
                   <td class="body-strong">{{ p.symbol }}</td>
                   <td class="r bu-num">{{ shares(p.shares) }}</td>
                   <td class="r bu-num">{{ eur(p.averagePriceCents) }}</td>
-                  <td class="r bu-num">{{ eur(p.feesCents) }}</td>
-                  <td class="r bu-num body-strong">{{ eur(p.costCents) }}</td>
+                  <td class="r">
+                    <span class="bu-input sm right price">
+                      <input [buMoney]="priceOf(p)" [optional]="true" (centsChange)="setPrice(p, $event)" [attr.aria-label]="'Preț curent ' + p.symbol" />
+                      <span class="sfx">€</span>
+                    </span>
+                  </td>
+                  <td class="r bu-num body-strong">{{ eur(valueOf(p)) }}</td>
+                  <td class="r bu-num">
+                    @if (gainOf(p); as gain) {
+                      <span [class.bu-pos]="gain >= 0" [class.bu-neg]="gain < 0">{{ gainText(gain, p.costCents) }}</span>
+                    } @else if (gainOf(p) === 0) {
+                      <span class="bu-muted">{{ gainText(0, p.costCents) }}</span>
+                    } @else {
+                      <span class="bu-muted">—</span>
+                    }
+                  </td>
                 </tr>
               }
             </tbody>
           </table>
         } @else {
-          @for (p of positions(); track p.symbol) {
-            <div class="bu-row">
-              <span class="bu-grow stack">
-                <span class="body-strong">{{ p.symbol }}</span>
-                <span class="caption bu-muted bu-num">{{ shares(p.shares) }} acțiuni · preț mediu {{ eur(p.averagePriceCents) }}</span>
-              </span>
-              <span class="body-strong bu-num">{{ eur(p.costCents) }}</span>
+          @for (p of held(); track p.symbol) {
+            <div class="bu-row position">
+              <div class="bu-between">
+                <span class="bu-grow stack">
+                  <span class="body-strong">{{ p.symbol }}</span>
+                  <span class="caption bu-muted bu-num">{{ shares(p.shares) }} acțiuni · preț mediu {{ eur(p.averagePriceCents) }}</span>
+                </span>
+                <span class="stack right">
+                  <span class="body-strong bu-num">{{ eur(valueOf(p)) }}</span>
+                  @if (gainOf(p) !== null) {
+                    <span class="caption bu-num" [class.bu-pos]="gainOf(p)! >= 0" [class.bu-neg]="gainOf(p)! < 0">{{ gainText(gainOf(p)!, p.costCents) }}</span>
+                  }
+                </span>
+              </div>
+              <label class="bu-field price-field">
+                <span class="lbl">Preț curent</span>
+                <span class="bu-input sm right">
+                  <input [buMoney]="priceOf(p)" [optional]="true" (centsChange)="setPrice(p, $event)" />
+                  <span class="sfx">€</span>
+                </span>
+              </label>
             </div>
           }
         }
@@ -81,16 +137,17 @@
 
       <section class="bu-card">
         <div class="bu-card-h">
-          <h2 class="title-2">Achiziții</h2>
-          <span class="caption bu-muted">{{ purchases().length }} achiziții · cele mai noi primele</span>
+          <h2 class="title-2">Tranzacții</h2>
+          <span class="caption bu-muted">{{ trades().length }} tranzacții · cele mai noi primele</span>
         </div>
-        @if (purchases().length === 0) {
-          <p class="bu-card-b bu-muted">Nicio achiziție încă.</p>
+        @if (trades().length === 0) {
+          <p class="bu-card-b bu-muted">Nicio tranzacție încă.</p>
         } @else if (desktop) {
           <table class="bu-table">
             <thead>
               <tr>
                 <th>Dată</th>
+                <th>Tip</th>
                 @if (funds().length > 1) { <th>Fond</th> }
                 <th>Simbol</th>
                 <th class="r">Acțiuni × Preț</th>
@@ -100,19 +157,20 @@
               </tr>
             </thead>
             <tbody>
-              @for (m of purchases(); track m.id) {
+              @for (m of trades(); track m.id) {
                 <tr>
                   <td class="bu-num">{{ date(m.occurredOn) }}</td>
+                  <td><span class="bu-chip neutral"><bu-icon [name]="m.type === 'sale' ? 'in' : 'out'" [size]="14" />{{ tradeLabel(m) }}</span></td>
                   @if (funds().length > 1) { <td>{{ fundName(m.categoryId) }}</td> }
                   <td>
-                    <span class="body-strong">{{ m.purchase!.symbol }}</span>
+                    <span class="body-strong">{{ m.trade!.symbol }}</span>
                     @if (m.note) { <span class="caption bu-muted"> · {{ m.note }}</span> }
                   </td>
-                  <td class="r bu-num">{{ shares(m.purchase!.shares) }} × {{ eur(m.purchase!.priceCents) }}</td>
-                  <td class="r bu-num">{{ eur(m.purchase!.feesCents) }}</td>
-                  <td class="r bu-num body-strong bu-neg">{{ eur(m.amountCents) }}</td>
+                  <td class="r bu-num">{{ shares(m.trade!.shares) }} × {{ eur(m.trade!.priceCents) }}</td>
+                  <td class="r bu-num">{{ eur(m.trade!.feesCents) }}</td>
+                  <td class="r bu-num body-strong" [class.bu-neg]="m.amountCents < 0" [class.bu-pos]="m.amountCents > 0">{{ eur(m.amountCents, { sign: true }) }}</td>
                   <td class="r">
-                    <button type="button" class="bu-iconbtn" (click)="deleting.set(m)" [attr.aria-label]="'Șterge achiziția ' + m.purchase!.symbol">
+                    <button type="button" class="bu-iconbtn" (click)="deleting.set(m)" [attr.aria-label]="'Șterge tranzacția ' + m.trade!.symbol">
                       <bu-icon name="trash" [size]="16" />
                     </button>
                   </td>
@@ -121,15 +179,16 @@
             </tbody>
           </table>
         } @else {
-          @for (m of purchases(); track m.id) {
+          @for (m of trades(); track m.id) {
             <div class="bu-mrow">
               <div class="mrow-top">
-                <span class="body-strong">{{ m.purchase!.symbol }}</span>
+                <span class="bu-chip neutral"><bu-icon [name]="m.type === 'sale' ? 'in' : 'out'" [size]="14" />{{ tradeLabel(m) }}</span>
+                <span class="body-strong">{{ m.trade!.symbol }}</span>
                 <span class="date caption bu-muted bu-num">{{ date(m.occurredOn) }}</span>
               </div>
-              <span class="body-strong bu-num bu-neg">{{ eur(m.amountCents) }}</span>
+              <span class="body-strong bu-num" [class.bu-neg]="m.amountCents < 0" [class.bu-pos]="m.amountCents > 0">{{ eur(m.amountCents, { sign: true }) }}</span>
               <span class="note caption bu-muted bu-num">
-                {{ purchaseLine(m) }}@if (m.note) { · {{ m.note }}}
+                <span>{{ tradeLine(m) }}@if (m.note) { · {{ m.note }}}</span>
                 <button type="button" class="bu-btn ghost neutral sm" (click)="deleting.set(m)">Șterge</button>
               </span>
             </div>
@@ -148,13 +207,21 @@
 
 <ng-template #form>
   <section class="bu-card">
-    <div class="bu-card-h"><h2 class="title-2">Adaugă achiziție</h2></div>
+    <div class="bu-card-h"><h2 class="title-2">Tranzacție nouă</h2></div>
     <form class="bu-card-b form" (submit)="$event.preventDefault(); submit()" novalidate>
+      <div class="bu-seg block" role="radiogroup" aria-label="Tip tranzacție">
+        <button type="button" role="radio" [attr.aria-checked]="mode() === 'purchase'" [class.on]="mode() === 'purchase'" (click)="setMode('purchase')">
+          <bu-icon name="out" [size]="16" /> Cumpărare
+        </button>
+        <button type="button" role="radio" [attr.aria-checked]="mode() === 'sale'" [class.on]="mode() === 'sale'" (click)="setMode('sale')">
+          <bu-icon name="in" [size]="16" /> Vânzare
+        </button>
+      </div>
       @if (funds().length > 1) {
         <div class="bu-field">
-          <label class="lbl" for="purchase-fund">Fond</label>
+          <label class="lbl" for="trade-fund">Fond</label>
           <span class="bu-input">
-            <select id="purchase-fund" [value]="fundId()" (change)="fundId.set($any($event.target).value)">
+            <select id="trade-fund" [value]="fundId()" (change)="fundId.set($any($event.target).value)">
               @for (f of funds(); track f.id) {
                 <option [value]="f.id">{{ f.name }}</option>
               }
@@ -165,53 +232,63 @@
       }
       <div class="fields-2">
         <div class="bu-field">
-          <label class="lbl" for="purchase-symbol">Simbol</label>
+          <label class="lbl" for="trade-symbol">Simbol</label>
           <span class="bu-input">
-            <input id="purchase-symbol" [value]="symbol()" (input)="symbol.set($any($event.target).value)" placeholder="IWDA" autocomplete="off" autocapitalize="characters" />
+            <input id="trade-symbol" [value]="symbol()" (input)="symbol.set($any($event.target).value)" list="held-symbols" placeholder="IWDA" autocomplete="off" autocapitalize="characters" />
           </span>
+          <datalist id="held-symbols">
+            @for (p of heldInFund(); track p.symbol) {
+              <option [value]="p.symbol">{{ shares(p.shares) }} acțiuni</option>
+            }
+          </datalist>
         </div>
         <div class="bu-field">
-          <label class="lbl" for="purchase-shares">Număr de acțiuni</label>
+          <label class="lbl" for="trade-shares">Număr de acțiuni</label>
           <span class="bu-input right">
-            <input id="purchase-shares" [value]="sharesText()" (input)="sharesText.set($any($event.target).value)" inputmode="decimal" autocomplete="off" />
+            <input id="trade-shares" [value]="sharesText()" (input)="sharesText.set($any($event.target).value)" inputmode="decimal" autocomplete="off" />
           </span>
         </div>
       </div>
       <div class="fields-2">
         <div class="bu-field">
-          <label class="lbl" for="purchase-price">Preț per acțiune</label>
+          <label class="lbl" for="trade-price">Preț per acțiune</label>
           <span class="bu-input right">
-            <input id="purchase-price" [buMoney]="priceCents()" (centsChange)="priceCents.set($event)" />
+            <input id="trade-price" [buMoney]="priceCents()" (centsChange)="priceCents.set($event)" />
             <span class="sfx">€</span>
           </span>
         </div>
         <div class="bu-field">
-          <label class="lbl" for="purchase-fees"><span>Taxe</span><span>Opțional</span></label>
+          <label class="lbl" for="trade-fees"><span>Taxe</span><span>Opțional</span></label>
           <span class="bu-input right">
-            <input id="purchase-fees" [buMoney]="purchaseFeesCents()" [optional]="true" (centsChange)="purchaseFeesCents.set($event)" />
+            <input id="trade-fees" [buMoney]="tradeFeesCents()" [optional]="true" (centsChange)="tradeFeesCents.set($event)" />
             <span class="sfx">€</span>
           </span>
         </div>
       </div>
       <div class="fields-2">
         <div class="bu-field">
-          <label class="lbl" for="purchase-date">Data</label>
+          <label class="lbl" for="trade-date">Data</label>
           <span class="bu-input">
-            <input id="purchase-date" type="date" [value]="occurredOn()" (change)="occurredOn.set($any($event.target).value)" />
+            <input id="trade-date" type="date" [value]="occurredOn()" (change)="occurredOn.set($any($event.target).value)" />
           </span>
         </div>
         <div class="bu-field">
-          <label class="lbl" for="purchase-note"><span>Notă</span><span>Opțional</span></label>
+          <label class="lbl" for="trade-note"><span>Notă</span><span>Opțional</span></label>
           <span class="bu-input">
-            <input id="purchase-note" [value]="note()" (input)="note.set($any($event.target).value)" maxlength="120" autocomplete="off" />
+            <input id="trade-note" [value]="note()" (input)="note.set($any($event.target).value)" maxlength="120" autocomplete="off" />
           </span>
         </div>
       </div>
       <div class="preview">
-        <div><span class="bu-muted">Valoare acțiuni</span><span class="bu-num">{{ eur(valueCents()) }}</span></div>
-        <div><span class="bu-muted">Taxe</span><span class="bu-num">{{ eur(purchaseFeesCents()) }}</span></div>
-        <div><span class="bu-muted">Total</span><span class="body-strong bu-num bu-neg">{{ eur(-totalCents()) }}</span></div>
-        <div><span class="bu-muted">Buget după achiziție</span><span class="body-strong bu-num">{{ eur(afterCents()) }}</span></div>
+        <div><span class="bu-muted">Valoare acțiuni</span><span class="bu-num">{{ eur(tradeValue()) }}</span></div>
+        <div><span class="bu-muted">Taxe</span><span class="bu-num">{{ eur(tradeFeesCents()) }}</span></div>
+        @if (mode() === 'purchase') {
+          <div><span class="bu-muted">Total</span><span class="body-strong bu-num bu-neg">{{ eur(-tradeTotal()) }}</span></div>
+          <div><span class="bu-muted">Buget după cumpărare</span><span class="body-strong bu-num">{{ eur(afterCents()) }}</span></div>
+        } @else {
+          <div><span class="bu-muted">Încasat</span><span class="body-strong bu-num bu-pos">{{ eur(tradeTotal(), { sign: true }) }}</span></div>
+          <div><span class="bu-muted">Buget după vânzare</span><span class="body-strong bu-num">{{ eur(afterCents()) }}</span></div>
+        }
       </div>
       @if (error(); as message) {
         <p class="caption bu-neg" role="alert">{{ message }}</p>
