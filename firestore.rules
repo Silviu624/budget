@@ -3,7 +3,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Only the household account(s) may read or write anything.
-    // Put the email(s) you created in Firebase Authentication here.
+    // Put the email(s) you created in Firebase Authentication here when pasting these rules
+    // into the console. Keep the placeholder in the repo if the repo is public.
     function isHousehold() {
       return request.auth != null
         && request.auth.token.email in ['you@example.com'];

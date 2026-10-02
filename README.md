@@ -42,6 +42,7 @@ Node 24 or newer is required.
    to you (for example `europe-west`).
 6. **Firestore Database** → Rules → paste the contents of [firestore.rules](firestore.rules),
    replacing `you@example.com` with the household email from step 3 → **Publish**.
+   Only the console copy needs the real email; keep the placeholder in this public repo.
    (Alternatively, with the Firebase CLI: `firebase login`, `firebase use <project-id>`,
    `firebase deploy --only firestore:rules`.)
 7. **Project settings** (gear icon) → General → Your apps → **Add app** → Web (`</>`).
