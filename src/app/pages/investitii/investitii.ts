@@ -3,17 +3,15 @@ import { Component, computed, inject, linkedSignal, signal } from '@angular/core
 import { RouterLink } from '@angular/router';
 import { BudgetStore, NETWORK_ERROR } from '../../data/budget-store';
 import { formatDate } from '../../domain/dates';
-import { formatEUR, formatPercent } from '../../domain/money';
+import { formatEUR } from '../../domain/money';
 import {
   buildPositions,
   formatShares,
   normalizeSymbol,
   parseShares,
-  positionValueCents,
   purchaseTotalCents,
   saleProceedsCents,
   tradeValueCents,
-  type Position,
 } from '../../domain/portfolio';
 import type { Movement, TradeDetails } from '../../domain/types';
 import { Breakpoint } from '../../shared/breakpoint';
@@ -38,7 +36,6 @@ export class Investitii {
   private readonly toast = inject(Toast);
 
   protected readonly eur = formatEUR;
-  protected readonly pct = formatPercent;
   protected readonly date = formatDate;
   protected readonly shares = formatShares;
 
@@ -59,13 +56,6 @@ export class Investitii {
   protected readonly positions = computed(() => buildPositions(this.trades()));
   protected readonly held = computed(() => this.positions().filter((p) => p.shares > 0));
   protected readonly costCents = computed(() => this.held().reduce((sum, p) => sum + p.costCents, 0));
-  protected readonly valueCents = computed(() =>
-    this.held().reduce((sum, p) => sum + positionValueCents(p, this.store.prices()), 0),
-  );
-  protected readonly gainCents = computed(() => this.valueCents() - this.costCents());
-  protected readonly hasPrices = computed(() =>
-    this.held().some((p) => this.store.prices()[p.symbol] !== undefined),
-  );
   protected readonly feesCents = computed(() =>
     this.trades().reduce((sum, m) => sum + m.trade!.feesCents, 0),
   );
@@ -115,33 +105,6 @@ export class Investitii {
 
   protected fundName(id: string): string {
     return this.store.categoryById(id)?.name ?? '';
-  }
-
-  protected priceOf(position: Position): number {
-    return this.store.prices()[position.symbol]?.priceCents ?? 0;
-  }
-
-  protected valueOf(position: Position): number {
-    return positionValueCents(position, this.store.prices());
-  }
-
-  protected gainOf(position: Position): number | null {
-    return this.store.prices()[position.symbol] ? this.valueOf(position) - position.costCents : null;
-  }
-
-  protected gainText(gainCents: number, costCents: number): string {
-    const percent = costCents > 0 ? (gainCents / costCents) * 100 : 0;
-    const sign = gainCents >= 0 ? '+' : '';
-    return `${formatEUR(gainCents, { sign: true })} (${sign}${formatPercent(percent)})`;
-  }
-
-  protected async setPrice(position: Position, priceCents: number): Promise<void> {
-    try {
-      await this.store.savePrice(position.symbol, priceCents);
-    } catch (err) {
-      console.error(err);
-      this.error.set(NETWORK_ERROR);
-    }
   }
 
   protected setMode(mode: TradeType): void {

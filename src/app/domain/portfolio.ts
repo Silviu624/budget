@@ -1,4 +1,4 @@
-import type { Movement, Prices, TradeDetails } from './types';
+import type { Movement, TradeDetails } from './types';
 
 /** Shares × price, rounded to cents. */
 export function tradeValueCents(details: TradeDetails): number {
@@ -64,12 +64,6 @@ export function buildPositions(movements: readonly Movement[]): Position[] {
   return [...bySymbol.values()]
     .map(({ boughtCostCents: _ignored, ...p }) => p)
     .sort((a, b) => b.costCents - a.costCents || a.symbol.localeCompare(b.symbol));
-}
-
-/** Shares × current price, or × average purchase price when no current price is known. */
-export function positionValueCents(position: Position, prices: Prices): number {
-  const price = prices[position.symbol]?.priceCents ?? position.averagePriceCents;
-  return Math.round(position.shares * price);
 }
 
 export function normalizeSymbol(symbol: string): string {

@@ -26,7 +26,6 @@ import type {
   MonthAllocation,
   Movement,
   MovementType,
-  Prices,
   Profile,
   TradeDetails,
 } from '../domain/types';
@@ -41,7 +40,6 @@ export type CategoryInput = Pick<
 export const NETWORK_ERROR = 'Nu ne-am putut conecta. Încearcă din nou.';
 
 const profileRef = () => doc(db, 'settings', 'profile');
-const pricesRef = () => doc(db, 'settings', 'prices');
 const categoryRef = (id: string) => doc(db, 'categories', id);
 const monthRef = (key: string) => doc(db, 'months', key);
 const movementRef = (id: string) => doc(db, 'movements', id);
@@ -67,8 +65,6 @@ export class BudgetStore {
   readonly months = signal<Month[]>([]);
   /** Newest first. */
   readonly movements = signal<Movement[]>([]);
-  /** Latest known price per symbol, typed in on the Investiții page. */
-  readonly prices = signal<Prices>({});
   readonly error = signal<string | null>(null);
 
   readonly loaded = computed(
@@ -194,11 +190,6 @@ export class BudgetStore {
         },
         fail,
       ),
-      onSnapshot(
-        pricesRef(),
-        (snap) => this.prices.set(snap.exists() ? (snap.data() as Prices) : {}),
-        fail,
-      ),
     ];
   }
 
@@ -211,7 +202,6 @@ export class BudgetStore {
     this.categories.set([]);
     this.months.set([]);
     this.movements.set([]);
-    this.prices.set({});
     this.error.set(null);
     this.profileLoaded.set(false);
     this.categoriesLoaded.set(false);
@@ -479,12 +469,6 @@ export class BudgetStore {
       trade,
     };
     await setDoc(doc(collection(db, 'movements')), movement);
-  }
-
-  /** Remembers the current price of a symbol for the portfolio value. */
-  async savePrice(symbol: string, priceCents: number): Promise<void> {
-    const key = normalizeSymbol(symbol);
-    await setDoc(pricesRef(), { [key]: { priceCents, updatedOn: this.today() } }, { merge: true });
   }
 
   async deleteMovement(id: string): Promise<void> {

@@ -63,7 +63,6 @@ categories/{id}      name, kind (saving | spending | investment), percent, targe
 months/{yyyy-mm}     income, status (planned | applied), fixed expenses, allocations (+ stored results once applied)
 movements/{id}       contributions posted by „Aplică luna”, withdrawals, purchases and sales (symbol,
                      shares, price, fees); a balance = initial + Σ movements
-settings/prices      latest price per symbol, typed in on Investiții for the portfolio value
 ```
 
 The allocation engine (shares with largest-remainder rounding, targets, overflow chains) lives in

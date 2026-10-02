@@ -3,7 +3,6 @@ import {
   buildPositions,
   formatShares,
   parseShares,
-  positionValueCents,
   purchaseTotalCents,
   saleProceedsCents,
 } from './portfolio';
@@ -55,12 +54,6 @@ describe('portfolio', () => {
       trade('sale', 'IWDA', 5, 12000, 100, '2026-10-01'),
     ]);
     expect(p).toMatchObject({ shares: 15, averagePriceCents: 9000, costCents: 135000, feesCents: 100, boughtShares: 20, soldShares: 5 });
-  });
-
-  it('values a position at the current price, or at the average price without one', () => {
-    const [p] = buildPositions([trade('purchase', 'IWDA', 10, 8000, 0, '2026-08-01')]);
-    expect(positionValueCents(p, {})).toBe(80000);
-    expect(positionValueCents(p, { IWDA: { priceCents: 9000, updatedOn: '2026-10-02' } })).toBe(90000);
   });
 
   it('formats and parses share counts', () => {

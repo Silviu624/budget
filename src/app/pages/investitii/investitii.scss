@@ -77,11 +77,6 @@
   gap: var(--space-2);
 }
 
-.price {
-  width: 132px;
-  margin-left: auto;
-}
-
 .position {
   flex-direction: column;
   align-items: stretch;
@@ -91,8 +86,4 @@
 .right {
   align-items: flex-end;
   text-align: right;
-}
-
-.price-field {
-  max-width: 200px;
 }

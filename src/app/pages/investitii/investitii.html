@@ -18,16 +18,9 @@
         <span class="caption bu-muted">{{ funds().length === 1 ? funds()[0].name : funds().length + ' fonduri' }}</span>
       </section>
       <section class="bu-card bu-kpi">
-        <span class="label bu-muted">Valoare portofoliu</span>
-        <span class="amount-lg bu-num">{{ eur(valueCents()) }}</span>
-        <span class="caption bu-muted bu-num">
-          Investit {{ eur(costCents()) }} ·
-          @if (hasPrices()) {
-            <span [class.bu-pos]="gainCents() >= 0" [class.bu-neg]="gainCents() < 0">{{ gainText(gainCents(), costCents()) }}</span>
-          } @else {
-            la prețul mediu de cumpărare
-          }
-        </span>
+        <span class="label bu-muted">Investit</span>
+        <span class="amount-lg bu-num">{{ eur(costCents()) }}</span>
+        <span class="caption bu-muted">{{ held().length }} simboluri · la prețul mediu de cumpărare</span>
       </section>
       <section class="bu-card bu-kpi">
         <span class="label bu-muted">Taxe plătite</span>
@@ -40,16 +33,12 @@
       <span class="label bu-muted">Buget disponibil</span>
       <span class="amount-xl bu-num">{{ eur(availableCents()) }}</span>
       <div class="bu-between caption bu-num">
-        <span class="bu-muted">Valoare portofoliu</span>
-        <span class="body-strong">{{ eur(valueCents()) }}</span>
+        <span class="bu-muted">Investit</span>
+        <span class="body-strong">{{ eur(costCents()) }}</span>
       </div>
-      <div class="bu-between caption bu-num">
-        <span class="bu-muted">Investit {{ eur(costCents()) }}</span>
-        @if (hasPrices()) {
-          <span [class.bu-pos]="gainCents() >= 0" [class.bu-neg]="gainCents() < 0">{{ gainText(gainCents(), costCents()) }}</span>
-        } @else {
-          <span class="bu-muted">taxe {{ eur(feesCents()) }}</span>
-        }
+      <div class="bu-between caption bu-num bu-muted">
+        <span>{{ held().length }} simboluri</span>
+        <span>taxe {{ eur(feesCents()) }}</span>
       </div>
     </section>
   }
@@ -62,11 +51,8 @@
 
       <section class="bu-card">
         <div class="bu-card-h">
-          <div>
-            <h2 class="title-2">Portofoliu</h2>
-            <p class="caption bu-muted">Scrie prețul curent ca să vezi valoarea și câștigul</p>
-          </div>
-          <span class="caption bu-muted">{{ held().length }} simboluri</span>
+          <h2 class="title-2">Portofoliu</h2>
+          <span class="caption bu-muted">{{ held().length }} simboluri · la prețul mediu de cumpărare</span>
         </div>
         @if (held().length === 0) {
           <p class="bu-card-b bu-muted">Nicio acțiune deținută încă.</p>
@@ -77,9 +63,8 @@
                 <th>Simbol</th>
                 <th class="r">Acțiuni</th>
                 <th class="r">Preț mediu</th>
-                <th class="r">Preț curent</th>
-                <th class="r">Valoare</th>
-                <th class="r">Câștig</th>
+                <th class="r">Taxe</th>
+                <th class="r">Investit</th>
               </tr>
             </thead>
             <tbody>
@@ -88,48 +73,20 @@
                   <td class="body-strong">{{ p.symbol }}</td>
                   <td class="r bu-num">{{ shares(p.shares) }}</td>
                   <td class="r bu-num">{{ eur(p.averagePriceCents) }}</td>
-                  <td class="r">
-                    <span class="bu-input sm right price">
-                      <input [buMoney]="priceOf(p)" [optional]="true" (centsChange)="setPrice(p, $event)" [attr.aria-label]="'Preț curent ' + p.symbol" />
-                      <span class="sfx">€</span>
-                    </span>
-                  </td>
-                  <td class="r bu-num body-strong">{{ eur(valueOf(p)) }}</td>
-                  <td class="r bu-num">
-                    @if (gainOf(p); as gain) {
-                      <span [class.bu-pos]="gain >= 0" [class.bu-neg]="gain < 0">{{ gainText(gain, p.costCents) }}</span>
-                    } @else if (gainOf(p) === 0) {
-                      <span class="bu-muted">{{ gainText(0, p.costCents) }}</span>
-                    } @else {
-                      <span class="bu-muted">—</span>
-                    }
-                  </td>
+                  <td class="r bu-num">{{ eur(p.feesCents) }}</td>
+                  <td class="r bu-num body-strong">{{ eur(p.costCents) }}</td>
                 </tr>
               }
             </tbody>
           </table>
         } @else {
           @for (p of held(); track p.symbol) {
-            <div class="bu-row position">
-              <div class="bu-between">
-                <span class="bu-grow stack">
-                  <span class="body-strong">{{ p.symbol }}</span>
-                  <span class="caption bu-muted bu-num">{{ shares(p.shares) }} acțiuni · preț mediu {{ eur(p.averagePriceCents) }}</span>
-                </span>
-                <span class="stack right">
-                  <span class="body-strong bu-num">{{ eur(valueOf(p)) }}</span>
-                  @if (gainOf(p) !== null) {
-                    <span class="caption bu-num" [class.bu-pos]="gainOf(p)! >= 0" [class.bu-neg]="gainOf(p)! < 0">{{ gainText(gainOf(p)!, p.costCents) }}</span>
-                  }
-                </span>
-              </div>
-              <label class="bu-field price-field">
-                <span class="lbl">Preț curent</span>
-                <span class="bu-input sm right">
-                  <input [buMoney]="priceOf(p)" [optional]="true" (centsChange)="setPrice(p, $event)" />
-                  <span class="sfx">€</span>
-                </span>
-              </label>
+            <div class="bu-row">
+              <span class="bu-grow stack">
+                <span class="body-strong">{{ p.symbol }}</span>
+                <span class="caption bu-muted bu-num">{{ shares(p.shares) }} acțiuni · preț mediu {{ eur(p.averagePriceCents) }}</span>
+              </span>
+              <span class="body-strong bu-num">{{ eur(p.costCents) }}</span>
             </div>
           }
         }

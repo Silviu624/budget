@@ -92,15 +92,6 @@ export interface Movement {
   trade?: TradeDetails | null;
 }
 
-/** The latest known price of a symbol, typed in by the household. */
-export interface SymbolPrice {
-  priceCents: number;
-  /** ISO date (yyyy-mm-dd). */
-  updatedOn: string;
-}
-
-export type Prices = Record<string, SymbolPrice>;
-
 export type ThemeChoice = 'auto' | 'light' | 'dark';
 
 export interface Profile {

@@ -63,7 +63,7 @@ describe('Investiții', () => {
     const { text, el } = await render(true);
     expect(text()).toContain('Buget disponibil');
     expect(text()).toContain('37.794,00 €');
-    expect(text()).toContain('Valoare portofoliu');
+    expect(text()).toContain('Investit');
     expect(text()).toContain('1.275,00 €');
     expect(text()).toContain('la prețul mediu de cumpărare');
     expect(text()).toContain('Taxe plătite');
@@ -74,14 +74,6 @@ describe('Investiții', () => {
     const portfolio = el.querySelectorAll('table')[0];
     expect(portfolio.querySelectorAll('tbody tr').length).toBe(1);
     expect(portfolio.textContent).toContain('85,00 €');
-  });
-
-  it('values the portfolio at the typed current price', async () => {
-    const { fixture, store, text } = await render(true);
-    store.prices.set({ IWDA: { priceCents: 9500, updatedOn: '2026-10-02' } });
-    await fixture.whenStable();
-    expect(text()).toContain('1.425,00 €');
-    expect(text()).toContain('+150,00 € (+11,8%)');
   });
 
   it('adds a purchase after validating the form', async () => {
