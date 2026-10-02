@@ -1,0 +1,79 @@
+<div class="shell">
+  <aside class="side">
+    <span class="wordmark">Buget</span>
+    <nav class="nav" aria-label="Navigare">
+      @for (item of nav; track item.path) {
+        <a [routerLink]="item.path" routerLinkActive="on" ariaCurrentWhenActive="page">
+          <bu-icon [name]="item.icon" [size]="20" />
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+    <div class="side-foot">
+      <div class="avatars" aria-hidden="true">
+        @for (letter of initials(); track $index) {
+          <span class="avatar">{{ letter }}</span>
+        }
+      </div>
+      <div class="who">
+        <span class="name">{{ displayName() }}</span>
+        <span class="email caption">{{ email() }}</span>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="mhead">
+      <span class="wordmark">Buget</span>
+      <button type="button" class="bu-btn ghost neutral sm" (click)="logout()">
+        <bu-icon name="logout" [size]="18" />
+        <span>Deconectare</span>
+      </button>
+    </header>
+
+    <header class="topbar">
+      <div class="topbar-left">
+        @if (shell.topSlot(); as top) {
+          <ng-container *ngTemplateOutlet="top; context: { desktop: true }" />
+        } @else {
+          <h1 class="title-1">{{ shell.title() }}</h1>
+        }
+      </div>
+      <button type="button" class="bu-btn ghost neutral" (click)="logout()">
+        <bu-icon name="logout" [size]="18" />
+        <span>Deconectare</span>
+      </button>
+    </header>
+
+    @if (shell.topSlot(); as top) {
+      <div class="topband">
+        <ng-container *ngTemplateOutlet="top; context: { desktop: false }" />
+      </div>
+    }
+
+    @if (store.error(); as error) {
+      <p class="error-banner" role="alert">{{ error }}</p>
+    }
+
+    <main class="content">
+      @if (store.loaded()) {
+        <router-outlet />
+      }
+    </main>
+
+    @if (shell.bottomSlot(); as bottom) {
+      <div class="bottombar">
+        <ng-container *ngTemplateOutlet="bottom" />
+      </div>
+    }
+
+    <nav class="tabbar" aria-label="Navigare">
+      @for (item of nav; track item.path) {
+        <a class="tab" [routerLink]="item.path" routerLinkActive="on" ariaCurrentWhenActive="page">
+          <span class="pill"><bu-icon [name]="item.icon" [size]="22" /></span>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+  </div>
+</div>

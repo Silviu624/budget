@@ -1,77 +1,67 @@
-.login {
-  min-height: 100dvh;
-  display: grid;
-  place-items: center;
-  padding: 16px;
+:host {
+  display: block;
 }
 
-.card {
-  width: 100%;
-  max-width: 380px;
+.bu-login {
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  justify-content: center;
+  padding: var(--space-6) var(--space-6) var(--space-10);
 }
 
-h1 {
-  margin: 0;
-  font-size: 1.5rem;
+.bu-login-card {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
 }
 
-.hint {
-  margin: 0 0 8px;
-  color: var(--muted);
-}
-
-label {
+.head {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 0.9rem;
-  color: var(--muted);
 }
 
-input {
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-  color: var(--text);
+.brand {
+  font-size: 28px;
+  line-height: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
 
-  &:focus {
-    outline: 2px solid var(--accent);
-    outline-offset: 1px;
+.eye {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-xs);
+  color: var(--ink-muted);
+
+  &:hover {
+    color: var(--ink);
   }
 }
 
-button {
-  margin-top: 8px;
-  padding: 10px 12px;
-  border: 0;
-  border-radius: 8px;
-  background: var(--accent);
-  color: var(--accent-text);
-  font-weight: 600;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-}
-
-.field-error,
 .error {
-  margin: -6px 0 0;
-  font-size: 0.85rem;
-  color: var(--danger);
+  color: var(--negative);
+  font-size: 13px;
+  line-height: 18px;
+  margin-top: calc(-1 * var(--space-2));
 }
 
-.banner {
-  margin: 0;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: var(--danger-bg);
-  color: var(--danger);
-  font-size: 0.9rem;
+.foot {
+  text-align: center;
+}
+
+@media (min-width: 960px) {
+  .bu-login-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-10);
+  }
 }

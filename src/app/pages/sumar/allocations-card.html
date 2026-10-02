@@ -1,0 +1,181 @@
+@let v = view();
+
+@if (desktop()) {
+  <div class="bu-card-h">
+    <h2 class="title-2">Alocări</h2>
+    <span class="caption bu-muted bu-num">Procent din rămasul de {{ eur(v.plan.remainderCents) }}</span>
+  </div>
+  <table class="bu-table">
+    <thead>
+      <tr>
+        <th>Categorie</th>
+        <th class="r">Procent</th>
+        <th class="r">Sumă</th>
+        <th class="r">{{ applied() ? 'Sold' : 'Sold după lună' }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="grp">
+        <td>Fonduri de economii</td>
+        <td class="r bu-num">{{ pct(v.plan.savingPercent) }}</td>
+        <td class="r bu-num">{{ eur(v.savingSharesCents) }}</td>
+        <td></td>
+      </tr>
+      @for (row of v.savingRows; track row.category.id) {
+        <tr>
+          <td>
+            <div class="bu-cat">
+              <span class="bu-kind save"><bu-icon name="vault" [size]="18" /></span>
+              <div class="cat-text">
+                <span class="name">{{ row.category.name }}</span>
+                <ng-container *ngTemplateOutlet="notes; context: { row: row }" />
+              </div>
+            </div>
+          </td>
+          <td class="r">
+            <ng-container *ngTemplateOutlet="percentCell; context: { row: row }" />
+          </td>
+          <td class="r body-strong bu-num">{{ eur(row.shareCents) }}</td>
+          <td class="r">
+            <div class="sold">
+              <span class="bu-num">{{ eur(row.balanceAfterCents ?? 0) }}</span>
+              @if (row.targetReached) {
+                <span class="caption bu-muted">țintă atinsă</span>
+              } @else if (row.targetPercent !== null) {
+                <span class="caption bu-muted bu-num">{{ pct(row.targetPercent) }} din țintă</span>
+              }
+            </div>
+          </td>
+        </tr>
+      }
+      <tr class="grp">
+        <td>Bugete de cheltuieli</td>
+        <td class="r bu-num">{{ pct(v.plan.spendingPercent) }}</td>
+        <td class="r bu-num">{{ eur(v.spendingSharesCents) }}</td>
+        <td></td>
+      </tr>
+      @for (row of v.spendingRows; track row.category.id) {
+        <tr>
+          <td>
+            <div class="bu-cat">
+              <span class="bu-kind spend"><bu-icon name="wallet" [size]="18" /></span>
+              <span class="name">{{ row.category.name }}</span>
+            </div>
+          </td>
+          <td class="r">
+            <ng-container *ngTemplateOutlet="percentCell; context: { row: row }" />
+          </td>
+          <td class="r body-strong bu-num">{{ eur(row.shareCents) }}</td>
+          <td class="r bu-muted">—</td>
+        </tr>
+      }
+      <tr class="total">
+        <td>Total</td>
+        <td class="r bu-num">{{ pct(v.plan.percentTotal) }}</td>
+        <td class="r bu-num">{{ eur(totalShares()) }}</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="bu-card-f">
+    @if (!applied()) {
+      <p class="caption bu-muted footer-text">
+        La aplicare, <b class="bu-pos bu-num">{{ plus(v.savingPostedCents) }}</b> intră în {{ v.fundsCount }} fonduri.
+        Poți edita luna și după.
+      </p>
+      <button type="button" class="bu-btn primary" [disabled]="!v.plan.canApply" (click)="apply.emit()">
+        <bu-icon name="check" [size]="18" />
+        <span>Aplică luna</span>
+      </button>
+    } @else {
+      <p class="caption bu-muted footer-text">
+        Pe {{ appliedDate() }} au intrat <b class="bu-pos bu-num">{{ plus(v.savingPostedCents) }}</b> în
+        {{ v.fundsCount }} fonduri.
+      </p>
+    }
+  </div>
+} @else {
+  <div class="bu-grp-h">
+    <span>Fonduri de economii</span>
+    <span class="bu-num bu-muted">{{ pct(v.plan.savingPercent) }} · {{ eur(v.savingSharesCents) }}</span>
+  </div>
+  @for (row of v.savingRows; track row.category.id) {
+    <div class="bu-arow">
+      <span class="bu-kind save"><bu-icon name="vault" [size]="18" /></span>
+      <div class="main">
+        <div class="top">
+          <span class="name">{{ row.category.name }}</span>
+          <span class="body-strong bu-num">{{ eur(row.shareCents) }}</span>
+        </div>
+        <div class="bot">
+          <span class="caption bu-muted bu-num">{{ soldLabel(row) }}</span>
+          <ng-container *ngTemplateOutlet="percentCell; context: { row: row }" />
+        </div>
+        <ng-container *ngTemplateOutlet="notes; context: { row: row }" />
+      </div>
+    </div>
+  }
+  <div class="bu-grp-h">
+    <span>Bugete de cheltuieli</span>
+    <span class="bu-num bu-muted">{{ pct(v.plan.spendingPercent) }} · {{ eur(v.spendingSharesCents) }}</span>
+  </div>
+  @for (row of v.spendingRows; track row.category.id) {
+    <div class="bu-arow">
+      <span class="bu-kind spend"><bu-icon name="wallet" [size]="18" /></span>
+      <div class="main">
+        <div class="top">
+          <span class="name">{{ row.category.name }}</span>
+          <span class="body-strong bu-num">{{ eur(row.shareCents) }}</span>
+        </div>
+        <div class="bot">
+          <span class="caption bu-muted">{{ soldLabel(row) }}</span>
+          <ng-container *ngTemplateOutlet="percentCell; context: { row: row }" />
+        </div>
+      </div>
+    </div>
+  }
+  <div class="bu-row total">
+    <span class="bu-grow body-strong">Total</span>
+    <span class="body-strong bu-num">{{ pct(v.plan.percentTotal) }} · {{ eur(totalShares()) }}</span>
+  </div>
+}
+
+<ng-template #percentCell let-row="row">
+  @if (applied()) {
+    <span class="bu-num">{{ pct(row.percent) }}</span>
+  } @else {
+    <span class="bu-input xs right">
+      <input
+        [buPercent]="row.percent"
+        (percentChange)="onPercent(row, $event)"
+        [attr.aria-label]="'Procent ' + row.category.name"
+      />
+      <span class="sfx">%</span>
+    </span>
+  }
+</ng-template>
+
+<ng-template #notes let-row="row">
+  @if (row.surplusToName || row.surplusInCents > 0) {
+    <div class="notes">
+      @if (row.surplusToName) {
+        <p class="bu-note">
+          <bu-icon name="target" [size]="14" />
+          <span>
+            Țintă atinsă: <b class="bu-num">{{ eur(row.contributionCents) }}</b> {{ keptVerb() }},
+            <b class="bu-num">{{ eur(row.surplusOutCents) }}</b> {{ sentVerb() }} {{ row.surplusToName }}
+          </span>
+        </p>
+      }
+      @if (row.surplusInCents > 0) {
+        <p class="bu-note">
+          <bu-icon name="corner" [size]="14" />
+          <span>
+            Primește <b class="bu-pos bu-num">{{ plus(row.surplusInCents) }}</b> surplus din
+            {{ row.surplusFromNames.join(', ') }}
+          </span>
+        </p>
+      }
+    </div>
+  }
+</ng-template>

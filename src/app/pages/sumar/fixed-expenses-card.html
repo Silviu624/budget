@@ -1,0 +1,113 @@
+<div class="bu-card-h">
+  <div>
+    <h2 class="title-2">Cheltuieli fixe</h2>
+    @if (subtitle()) {
+      <p class="caption bu-muted">{{ subtitle() }}</p>
+    }
+  </div>
+  @if (!readonly()) {
+    <button type="button" class="bu-btn ghost sm" (click)="startAdd()" [disabled]="editing() !== null">
+      <bu-icon name="plus" [size]="16" />
+      <span>Adaugă</span>
+    </button>
+  }
+</div>
+
+<ul>
+  @for (e of expenses(); track $index; let i = $index) {
+    @if (editing() === i) {
+      <li class="bu-row editing">
+        <ng-container *ngTemplateOutlet="editor; context: { title: 'Editează cheltuiala', canDelete: true }" />
+      </li>
+    } @else if (readonly()) {
+      <li class="bu-row">
+        <span class="bu-grow">{{ e.name }}</span>
+        <span class="bu-num">{{ eur(e.amountCents) }}</span>
+      </li>
+    } @else if (desktop()) {
+      <li class="bu-row">
+        <span class="bu-grow">{{ e.name }}</span>
+        <span class="bu-input sm right amount">
+          <input [buMoney]="e.amountCents" (centsChange)="setAmount(i, $event)" [attr.aria-label]="'Suma pentru ' + e.name" />
+          <span class="sfx">€</span>
+        </span>
+        <span class="acts">
+          <button type="button" class="bu-iconbtn" (click)="startEdit(i)" [attr.aria-label]="'Editează ' + e.name">
+            <bu-icon name="pencil" [size]="16" />
+          </button>
+          <button type="button" class="bu-iconbtn" (click)="askDelete(i)" [attr.aria-label]="'Șterge ' + e.name">
+            <bu-icon name="trash" [size]="16" />
+          </button>
+        </span>
+      </li>
+    } @else {
+      <li
+        class="bu-row clickable"
+        role="button"
+        tabindex="0"
+        (click)="startEdit(i)"
+        (keydown.enter)="startEdit(i)"
+        [attr.aria-label]="'Editează ' + e.name"
+      >
+        <span class="bu-grow">{{ e.name }}</span>
+        <span class="bu-num">{{ eur(e.amountCents) }}</span>
+        <bu-icon name="chevR" [size]="16" class="bu-muted" />
+      </li>
+    }
+  }
+  @if (editing() === 'new') {
+    <li class="bu-row editing">
+      <ng-container *ngTemplateOutlet="editor; context: { title: 'Adaugă cheltuială', canDelete: false }" />
+    </li>
+  }
+  <li class="bu-row total">
+    <span class="bu-grow label">Total</span>
+    <span class="body-strong bu-num">{{ eur(total()) }}</span>
+  </li>
+</ul>
+
+<ng-template #editor let-title="title" let-canDelete="canDelete">
+  <span class="label">{{ title }}</span>
+  <div class="fields">
+    <label class="bu-field">
+      <span class="lbl">Nume</span>
+      <span class="bu-input sm">
+        <input [value]="draftName()" (input)="draftName.set($any($event.target).value)" autocomplete="off" />
+      </span>
+    </label>
+    <label class="bu-field">
+      <span class="lbl">Sumă</span>
+      <span class="bu-input sm right">
+        <input [buMoney]="draftCents()" (centsChange)="draftCents.set($event)" />
+        <span class="sfx">€</span>
+      </span>
+    </label>
+  </div>
+  @if (draftError(); as err) {
+    <p class="caption bu-neg" role="alert">{{ err }}</p>
+  }
+  <div class="bu-between">
+    @if (canDelete) {
+      <button type="button" class="bu-btn ghost neutral sm" (click)="askDeleteCurrent()">
+        <bu-icon name="trash" [size]="16" />
+        <span>Șterge</span>
+      </button>
+    } @else {
+      <span></span>
+    }
+    <span class="bu-hstack">
+      <button type="button" class="bu-btn secondary sm" (click)="cancel()">Anulează</button>
+      <button type="button" class="bu-btn primary sm" (click)="save()">Salvează</button>
+    </span>
+  </div>
+</ng-template>
+
+@if (deleting() !== null) {
+  <bu-confirm-dialog
+    [title]="deleteTitle()"
+    [body]="deleteBody()"
+    confirmLabel="Șterge"
+    (confirmed)="confirmDelete()"
+    (cancelled)="deleting.set(null)"
+  />
+}

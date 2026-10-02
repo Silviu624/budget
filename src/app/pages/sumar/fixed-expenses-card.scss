@@ -1,0 +1,23 @@
+:host {
+  display: block;
+}
+
+.bu-card-h + ul > .bu-row:first-child {
+  border-top: 1px solid var(--line);
+}
+
+.amount {
+  width: 124px;
+  flex: none;
+}
+
+.total {
+  background: var(--surface-sunken);
+  border-radius: 0 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px);
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
