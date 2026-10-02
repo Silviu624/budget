@@ -5,12 +5,12 @@
 // Copy them from: Firebase console > Project settings > General > Your apps > SDK setup.
 export const environment = {
   firebase: {
-    apiKey: 'YOUR_API_KEY',
-    authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
-    projectId: 'YOUR_PROJECT_ID',
-    storageBucket: 'YOUR_PROJECT_ID.firebasestorage.app',
-    messagingSenderId: 'YOUR_SENDER_ID',
-    appId: 'YOUR_APP_ID',
+    apiKey: 'AIzaSyD_AmfxTgQJt2-RmQrK6CDVF1s8t_ClJwU',
+    authDomain: 'budget-afb02.firebaseapp.com',
+    projectId: 'budget-afb02',
+    storageBucket: 'budget-afb02.firebasestorage.app',
+    messagingSenderId: '1060433593316',
+    appId: '1:1060433593316:web:466a262101a975e4d6fdf1',
   },
 };
 
