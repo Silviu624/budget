@@ -7,7 +7,10 @@ import { ConfirmDialog } from '../../shared/confirm-dialog';
 import { Icon } from '../../shared/icon';
 import { MoneyInput } from '../../shared/money-input';
 
-/** „Cheltuieli fixe”: the month's list with inline editing (mobile: tap a row; desktop: amount inputs + pencil/trash). */
+/**
+ * A month's list of named amounts with inline editing (mobile: tap a row; desktop: amount inputs
+ * plus pencil/trash). Used for „Cheltuieli fixe” and, with other labels, for „Venit lunar”.
+ */
 @Component({
   selector: 'app-fixed-expenses-card',
   imports: [NgTemplateOutlet, Icon, MoneyInput, ConfirmDialog],
@@ -20,6 +23,16 @@ export class FixedExpensesCard {
   readonly readonly = input(false);
   readonly subtitle = input('');
   readonly desktop = input(false);
+  readonly title = input('Cheltuieli fixe');
+  readonly nameLabel = input('Nume');
+  readonly editTitle = input('Editează cheltuiala');
+  readonly addTitle = input('Adaugă cheltuială');
+  /** Noun in the delete question: „Ștergi cheltuiala „Chirie”?” */
+  readonly deleteNoun = input('cheltuiala');
+  /** Follows the amount in the delete dialog body. */
+  readonly deleteBody = input('nu se va mai scădea din venitul acestei luni.');
+  /** Shown as a row while the list is empty (nothing when blank). */
+  readonly emptyText = input('');
   readonly changed = output<FixedExpense[]>();
 
   protected readonly eur = formatEUR;
@@ -32,12 +45,12 @@ export class FixedExpensesCard {
 
   protected readonly deleteTitle = computed(() => {
     const index = this.deleting();
-    return index === null ? '' : `Ștergi cheltuiala „${this.expenses()[index]?.name ?? ''}”?`;
+    return index === null ? '' : `Ștergi ${this.deleteNoun()} „${this.expenses()[index]?.name ?? ''}”?`;
   });
-  protected readonly deleteBody = computed(() => {
+  protected readonly deleteText = computed(() => {
     const index = this.deleting();
     const expense = index === null ? undefined : this.expenses()[index];
-    return expense ? `${formatEUR(expense.amountCents)} nu se va mai scădea din venitul acestei luni.` : '';
+    return expense ? `${formatEUR(expense.amountCents)} ${this.deleteBody()}` : '';
   });
 
   protected startEdit(index: number): void {

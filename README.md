@@ -1,7 +1,7 @@
 # Buget
 
-A shared monthly-budget web app for a couple with one login. Each month you enter one income,
-subtract the fixed expenses, and split what remains by percentages into saving buckets (with
+A shared monthly-budget web app for a couple with one login. Each month starts at zero income;
+you add the amounts as they arrive, subtract the fixed expenses, and split what remains by percentages into saving buckets (with
 balances, targets and overflow), investment buckets (a budget you buy shares from, with the
 portfolio and purchases tracked in Investiții) and spending buckets (monthly allowances). The UI is in Romanian,
 the currency is euro.
@@ -60,7 +60,7 @@ All money is integer euro cents. Firestore collections:
 ```
 settings/profile     display name, default income, theme, fixed-expense template
 categories/{id}      name, kind (saving | spending | investment), percent, target, overflow, initial balance, position
-months/{yyyy-mm}     income, status (planned | applied), fixed expenses, allocations (+ stored results once applied)
+months/{yyyy-mm}     incomes (+ their sum), status (planned | applied), fixed expenses, allocations (+ stored results once applied)
 movements/{id}       contributions posted by „Aplică luna”, withdrawals, purchases and sales (symbol,
                      shares, price, fees); a balance = initial + Σ movements
 ```

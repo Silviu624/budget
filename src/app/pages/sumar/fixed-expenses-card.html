@@ -1,6 +1,6 @@
 <div class="bu-card-h">
   <div>
-    <h2 class="title-2">Cheltuieli fixe</h2>
+    <h2 class="title-2">{{ title() }}</h2>
     @if (subtitle()) {
       <p class="caption bu-muted">{{ subtitle() }}</p>
     }
@@ -17,7 +17,7 @@
   @for (e of expenses(); track $index; let i = $index) {
     @if (editing() === i) {
       <li class="bu-row editing">
-        <ng-container *ngTemplateOutlet="editor; context: { title: 'Editează cheltuiala', canDelete: true }" />
+        <ng-container *ngTemplateOutlet="editor; context: { title: editTitle(), canDelete: true }" />
       </li>
     } @else if (readonly()) {
       <li class="bu-row">
@@ -57,8 +57,11 @@
   }
   @if (editing() === 'new') {
     <li class="bu-row editing">
-      <ng-container *ngTemplateOutlet="editor; context: { title: 'Adaugă cheltuială', canDelete: false }" />
+      <ng-container *ngTemplateOutlet="editor; context: { title: addTitle(), canDelete: false }" />
     </li>
+  }
+  @if (expenses().length === 0 && editing() !== 'new' && emptyText()) {
+    <li class="bu-row"><span class="bu-grow bu-muted">{{ emptyText() }}</span></li>
   }
   <li class="bu-row total">
     <span class="bu-grow label">Total</span>
@@ -70,7 +73,7 @@
   <span class="label">{{ title }}</span>
   <div class="fields">
     <label class="bu-field">
-      <span class="lbl">Nume</span>
+      <span class="lbl">{{ nameLabel() }}</span>
       <span class="bu-input sm">
         <input [value]="draftName()" (input)="draftName.set($any($event.target).value)" autocomplete="off" />
       </span>
@@ -105,7 +108,7 @@
 @if (deleting() !== null) {
   <bu-confirm-dialog
     [title]="deleteTitle()"
-    [body]="deleteBody()"
+    [body]="deleteText()"
     confirmLabel="Șterge"
     (confirmed)="confirmDelete()"
     (cancelled)="deleting.set(null)"

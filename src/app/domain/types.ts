@@ -38,6 +38,9 @@ export interface FixedExpense {
   position: number;
 }
 
+/** An amount that came in during a month („Salariu”, „Bonus”); the month's income is their sum. */
+export type IncomeEntry = FixedExpense;
+
 export type MonthStatus = 'planned' | 'applied';
 
 /** Allocation line stored on a month. Result fields are written by „Aplică luna” and null otherwise. */
@@ -56,7 +59,9 @@ export interface Month {
   key: string;
   year: number;
   month: number;
+  /** Always Σ incomes; stored so Istoric and the engine read one number. */
   incomeCents: number;
+  incomes: IncomeEntry[];
   status: MonthStatus;
   /** ISO date-time or null. */
   appliedAt: string | null;
@@ -96,6 +101,7 @@ export type ThemeChoice = 'auto' | 'light' | 'dark';
 
 export interface Profile {
   displayName: string;
+  /** No longer used: every month starts at 0 and incomes are added as they arrive. */
   defaultIncomeCents: number;
   theme: ThemeChoice;
   fixedExpenseTemplate: FixedExpense[];

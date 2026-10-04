@@ -165,7 +165,14 @@ export class BudgetStore {
         (qs) => {
           this.months.set(
             qs.docs
-              .map((d) => ({ key: d.id, ...(d.data() as Omit<Month, 'key'>) }))
+              .map((d) => {
+                const data = d.data() as Omit<Month, 'key'>;
+                // Months saved before incomes existed carry a single income line.
+                const incomes =
+                  data.incomes ??
+                  (data.incomeCents > 0 ? [{ name: 'Venit', amountCents: data.incomeCents, position: 0 }] : []);
+                return { key: d.id, ...data, incomes };
+              })
               .sort((a, b) => compareMonthKeys(a.key, b.key)),
           );
           this.monthsLoaded.set(true);
@@ -271,7 +278,7 @@ export class BudgetStore {
 
   async updateMonth(
     key: string,
-    patch: Partial<Pick<Month, 'incomeCents' | 'fixedExpenses' | 'allocations'>>,
+    patch: Partial<Pick<Month, 'incomeCents' | 'incomes' | 'fixedExpenses' | 'allocations'>>,
   ): Promise<void> {
     await updateDoc(monthRef(key), patch as DocumentData);
   }

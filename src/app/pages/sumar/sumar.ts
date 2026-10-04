@@ -12,13 +12,13 @@ import {
   isMonthKey,
   monthLabel,
 } from '../../domain/dates';
+import { fixedTotal } from '../../domain/balances';
 import { formatEUR, formatPercent, MINUS } from '../../domain/money';
-import type { FixedExpense } from '../../domain/types';
+import type { FixedExpense, IncomeEntry } from '../../domain/types';
 import { AllocationMeter } from '../../shared/allocation-meter';
 import { Breakpoint } from '../../shared/breakpoint';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
 import { Icon } from '../../shared/icon';
-import { MoneyInput } from '../../shared/money-input';
 import { StatusChip } from '../../shared/status-chip';
 import { BottomSlot, ShellService, TopSlot } from '../../shell/shell.service';
 import { AllocationsCard, type PercentChange } from './allocations-card';
@@ -37,7 +37,6 @@ type Dialog = 'apply' | 'reopen' | null;
     Icon,
     StatusChip,
     AllocationMeter,
-    MoneyInput,
     ConfirmDialog,
     FixedExpensesCard,
     AllocationsCard,
@@ -68,9 +67,6 @@ export class Sumar {
   });
   protected readonly canGoBack = computed(() => this.store.canGoBack(this.key()));
   protected readonly canGoForward = computed(() => this.store.canGoForward(this.key()));
-  protected readonly defaultIncome = computed(() =>
-    formatEUR(this.store.profile()?.defaultIncomeCents ?? 0),
-  );
   protected readonly appliedAt = computed(() => {
     const at = this.month()?.appliedAt;
     return at ? formatDateTime(at) : '';
@@ -117,8 +113,10 @@ export class Sumar {
     void this.router.navigate(['/sumar', addMonths(this.key(), delta)]);
   }
 
-  protected setIncome(incomeCents: number): void {
-    void this.save(() => this.store.updateMonth(this.key(), { incomeCents }));
+  protected setIncomes(incomes: IncomeEntry[]): void {
+    void this.save(() =>
+      this.store.updateMonth(this.key(), { incomes, incomeCents: fixedTotal(incomes) }),
+    );
   }
 
   protected setFixedExpenses(fixedExpenses: FixedExpense[]): void {

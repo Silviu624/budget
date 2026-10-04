@@ -1,14 +1,15 @@
 import { parseMonthKey } from './dates';
 import type { Category, Month, MonthAllocation, Profile } from './types';
 
-/** A fresh planned month: income and fixed expenses from the template (D2), every active category with its default percent. */
+/** A fresh planned month: no income yet, fixed expenses from the template (D2), every active category with its default percent. */
 export function createPlannedMonth(key: string, profile: Profile, categories: readonly Category[]): Month {
   const { year, month } = parseMonthKey(key);
   return {
     key,
     year,
     month,
-    incomeCents: profile.defaultIncomeCents,
+    incomeCents: 0,
+    incomes: [],
     status: 'planned',
     appliedAt: null,
     fixedExpenses: profile.fixedExpenseTemplate.map((e, i) => ({

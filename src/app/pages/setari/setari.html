@@ -10,23 +10,6 @@
 
 <div class="bu-cols">
   <div class="bu-vstack">
-    <section class="bu-card">
-      <div class="bu-card-h tight"><h2 class="title-2">Venit implicit</h2></div>
-      <form class="bu-card-b form" (submit)="$event.preventDefault(); saveIncome()" novalidate>
-        <div class="bu-field">
-          <label class="lbl" for="default-income">Venit lunar</label>
-          <span class="bu-input right">
-            <input id="default-income" [buMoney]="incomeDraft()" (centsChange)="incomeDraft.set($event)" />
-            <span class="sfx">€</span>
-          </span>
-          <span class="hint">Se folosește la fiecare lună nouă; îl poți schimba lunar în Sumar.</span>
-        </div>
-        <div class="acts-right">
-          <button type="submit" class="bu-btn primary" [disabled]="incomeBusy()">Salvează</button>
-        </div>
-      </form>
-    </section>
-
     @if (desktop) {
       <ng-container *ngTemplateOutlet="themeCard" />
     }

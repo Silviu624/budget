@@ -31,6 +31,7 @@ const months: Month[] = seed.months.map((m) => ({
   year: Number(m.key.slice(0, 4)),
   month: Number(m.key.slice(5)),
   incomeCents: m.incomeCents,
+  incomes: [{ name: 'Salariu', amountCents: m.incomeCents, position: 0 }],
   status: m.status as MonthStatus,
   appliedAt: m.appliedAt,
   fixedExpenses: m.fixedExpenses,
@@ -106,6 +107,36 @@ describe('Sumar', () => {
     expect(text).toContain('Pe 02.09.2026 la 09:14');
     expect(text).toContain('Total încasat');
     expect(fixture.nativeElement.querySelector('input[buMoney]')).toBeNull();
+  });
+
+  it('lists the income entries and saves a new one', async () => {
+    const { fixture, store, text } = await render('2026-10', true);
+    expect(text).toContain('Venit lunar');
+    expect(text).toContain('Salariu');
+    expect(text).toContain('Adaugă sumele pe măsură ce intră în cont');
+    const el = fixture.nativeElement as HTMLElement;
+    const cards = el.querySelectorAll('app-fixed-expenses-card');
+    const addButton = Array.from(cards[0].querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Adaugă') as HTMLButtonElement;
+    addButton.click();
+    await fixture.whenStable();
+    const editor = cards[0].querySelector('.editing') as HTMLElement;
+    expect(editor.textContent).toContain('Adaugă venit');
+    expect(editor.textContent).toContain('Sursă');
+    const inputs = editor.querySelectorAll('input');
+    inputs[0].value = 'Bonus';
+    inputs[0].dispatchEvent(new Event('input'));
+    inputs[1].value = '500';
+    inputs[1].dispatchEvent(new Event('blur'));
+    await fixture.whenStable();
+    (Array.from(editor.querySelectorAll('button')).find((b) => b.textContent?.trim() === 'Salvează') as HTMLButtonElement).click();
+    await fixture.whenStable();
+    expect(store.updateMonth).toHaveBeenCalledWith('2026-10', {
+      incomes: [
+        { name: 'Salariu', amountCents: 1000000, position: 0 },
+        { name: 'Bonus', amountCents: 50000, position: 1 },
+      ],
+      incomeCents: 1050000,
+    });
   });
 
   it('opens the confirm dialog for „Aplică luna”', async () => {

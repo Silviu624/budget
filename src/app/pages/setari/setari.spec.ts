@@ -24,10 +24,8 @@ async function render(desktop: boolean, query: Record<string, string> = {}) {
 }
 
 describe('Setări', () => {
-  it('shows the default income, template and categories', async () => {
+  it('shows the template and categories', async () => {
     const { el, text } = await render(true);
-    expect(text()).toContain('Venit implicit');
-    expect((el.querySelector('#default-income') as HTMLInputElement).value).toBe('10.000,00');
     expect(text()).toContain('Șablon cheltuieli fixe');
     expect(text()).toContain('Chirie');
     expect(text()).toContain('3.000,00 €');
@@ -71,16 +69,5 @@ describe('Setări', () => {
       expect.objectContaining({ name: 'Fond de urgență', kind: 'saving', percent: 20, targetCents: 1800000, overflowToId: 'investitii' }),
       'siguranta',
     );
-  });
-
-  it('saves the default income', async () => {
-    const { fixture, el, store } = await render(false);
-    const income = el.querySelector('#default-income') as HTMLInputElement;
-    income.value = '11000';
-    income.dispatchEvent(new Event('blur'));
-    await fixture.whenStable();
-    (el.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
-    await fixture.whenStable();
-    expect(store.saveProfile).toHaveBeenCalledWith({ defaultIncomeCents: 1100000 });
   });
 });

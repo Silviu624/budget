@@ -39,6 +39,7 @@ export const seedMonths: Month[] = seed.months.map((m) => ({
   year: Number(m.key.slice(0, 4)),
   month: Number(m.key.slice(5)),
   incomeCents: m.incomeCents,
+  incomes: [{ name: 'Salariu', amountCents: m.incomeCents, position: 0 }],
   status: m.status as MonthStatus,
   appliedAt: m.appliedAt,
   fixedExpenses: m.fixedExpenses,

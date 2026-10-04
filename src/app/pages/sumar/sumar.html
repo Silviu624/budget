@@ -63,22 +63,20 @@
 
   <div class="bu-cols">
     <div class="bu-vstack">
-      <section class="bu-card">
-        <div class="bu-card-h tight">
-          <h2 class="title-2">Venit lunar</h2>
-          <span class="caption bu-muted bu-num">{{ v.applied ? 'Total încasat' : 'Implicit: ' + defaultIncome() }}</span>
-        </div>
-        <div class="bu-card-b">
-          @if (v.applied) {
-            <span class="amount-lg bu-num">{{ eur(v.month.incomeCents) }}</span>
-          } @else {
-            <span class="bu-input lg right">
-              <input [buMoney]="v.month.incomeCents" (centsChange)="setIncome($event)" aria-label="Venit lunar" />
-              <span class="sfx">€</span>
-            </span>
-          }
-        </div>
-      </section>
+      <app-fixed-expenses-card
+        title="Venit lunar"
+        nameLabel="Sursă"
+        editTitle="Editează venitul"
+        addTitle="Adaugă venit"
+        deleteNoun="venitul"
+        deleteBody="nu va mai fi inclusă în venitul lunii."
+        emptyText="Niciun venit adăugat încă."
+        [expenses]="v.month.incomes"
+        [readonly]="v.applied"
+        [desktop]="desktop"
+        [subtitle]="v.applied ? 'Total încasat' : 'Adaugă sumele pe măsură ce intră în cont'"
+        (changed)="setIncomes($event)"
+      />
 
       <app-fixed-expenses-card
         [expenses]="v.month.fixedExpenses"

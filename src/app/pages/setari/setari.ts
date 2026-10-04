@@ -1,6 +1,6 @@
 import { CdkDrag, CdkDragHandle, CdkDropList, moveItemInArray, type CdkDragDrop } from '@angular/cdk/drag-drop';
 import { NgTemplateOutlet } from '@angular/common';
-import { Component, computed, effect, inject, linkedSignal, signal, untracked } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs';
@@ -28,7 +28,7 @@ interface CategoryDraft {
 
 const SAVED = 'Modificările au fost salvate.';
 
-/** Setări: default income, theme, the fixed-expense template and the categories. */
+/** Setări: theme, the fixed-expense template and the categories. */
 @Component({
   selector: 'app-setari',
   imports: [CdkDropList, CdkDrag, CdkDragHandle, NgTemplateOutlet, Icon, MoneyInput, PercentInput, ConfirmDialog],
@@ -55,10 +55,6 @@ export class Setari {
     { value: 'light', label: 'Luminoasă' },
     { value: 'dark', label: 'Întunecată' },
   ];
-
-  // ---------------------------------------------------------- Venit implicit
-  protected readonly incomeDraft = linkedSignal(() => this.store.profile()?.defaultIncomeCents ?? 0);
-  protected readonly incomeBusy = signal(false);
 
   // ------------------------------------------------------------------ Șablon
   protected readonly template = computed(() =>
@@ -112,14 +108,6 @@ export class Setari {
         untracked(() => this.startCategoryEdit(category));
       }
     });
-  }
-
-  // ---------------------------------------------------------- Venit implicit
-
-  protected async saveIncome(): Promise<void> {
-    this.incomeBusy.set(true);
-    await this.run(() => this.store.saveProfile({ defaultIncomeCents: this.incomeDraft() }));
-    this.incomeBusy.set(false);
   }
 
   protected setTheme(choice: ThemeChoice): void {
