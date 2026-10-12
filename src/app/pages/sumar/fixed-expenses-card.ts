@@ -33,10 +33,19 @@ export class FixedExpensesCard {
   readonly deleteBody = input('nu se va mai scădea din venitul acestei luni.');
   /** Shown as a row while the list is empty (nothing when blank). */
   readonly emptyText = input('');
+  /** Fixed expenses only: a check per row to confirm it was paid, plus a summary row. */
+  readonly trackPaid = input(false);
   readonly changed = output<FixedExpense[]>();
+  readonly paidChange = output<{ index: number; paid: boolean }>();
 
   protected readonly eur = formatEUR;
   protected readonly total = computed(() => fixedTotal(this.expenses()));
+  protected readonly paidCount = computed(() => this.expenses().filter((e) => !!e.paidOn).length);
+  protected readonly unpaidCents = computed(() => fixedTotal(this.expenses().filter((e) => !e.paidOn)));
+  protected readonly paidSummary = computed(() => {
+    const rest = this.unpaidCents() > 0 ? `de plătit ${formatEUR(this.unpaidCents())}` : 'totul achitat';
+    return `${this.paidCount()} din ${this.expenses().length} · ${rest}`;
+  });
   protected readonly editing = signal<number | 'new' | null>(null);
   protected readonly draftName = signal('');
   protected readonly draftCents = signal(0);
@@ -95,6 +104,11 @@ export class FixedExpensesCard {
     this.editing.set(null);
   }
 
+  protected togglePaid(index: number, event?: Event): void {
+    event?.stopPropagation();
+    this.paidChange.emit({ index, paid: !this.expenses()[index].paidOn });
+  }
+
   protected setAmount(index: number, amountCents: number): void {
     const list = [...this.expenses()];
     list[index] = { ...list[index], amountCents };
@@ -123,6 +137,13 @@ export class FixedExpensesCard {
   }
 
   private emit(list: FixedExpense[]): void {
-    this.changed.emit(list.map((e, position) => ({ name: e.name, amountCents: e.amountCents, position })));
+    this.changed.emit(
+      list.map((e, position) => ({
+        name: e.name,
+        amountCents: e.amountCents,
+        position,
+        paidOn: e.paidOn ?? null,
+      })),
+    );
   }
 }

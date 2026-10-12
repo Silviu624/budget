@@ -36,6 +36,8 @@ export interface FixedExpense {
   name: string;
   amountCents: number;
   position: number;
+  /** On a month: the day it was marked as paid, or null. Never set on the template. */
+  paidOn?: string | null;
 }
 
 /** An amount that came in during a month („Salariu”, „Bonus”); the month's income is their sum. */

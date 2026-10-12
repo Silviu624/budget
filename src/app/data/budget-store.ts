@@ -283,6 +283,21 @@ export class BudgetStore {
     await updateDoc(monthRef(key), patch as DocumentData);
   }
 
+  /** Marks one fixed expense of a month as paid (today) or not; works on applied months too. */
+  async setExpensePaid(key: string, index: number, paid: boolean): Promise<void> {
+    const month = this.monthByKey(key);
+    if (!month) {
+      return;
+    }
+    const fixedExpenses = month.fixedExpenses.map((e, i) => ({
+      name: e.name,
+      amountCents: e.amountCents,
+      position: e.position,
+      paidOn: i === index ? (paid ? this.today() : null) : (e.paidOn ?? null),
+    }));
+    await updateDoc(monthRef(key), { fixedExpenses });
+  }
+
   /** „Aplică luna”: re-validates, stores the results and posts one contribution per saving category, atomically. */
   async applyMonth(key: string): Promise<void> {
     const categories = this.categories();

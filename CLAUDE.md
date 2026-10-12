@@ -31,6 +31,7 @@ Read the brief before starting any feature, and the matching artboards before bu
 - Personal buckets are „Bani personali – Baby” and „Bani personali – Babyshutzu”; the account display name is „Baby & Babyshutzu”.
 - The live database starts with the design's categories and expense template but **zero balances**; `design/seed.json` is for tests and local development only.
 - **Venit lunar (2026-10-04)**: a month starts with no income; amounts are added as they arrive (`months.incomes`, same shape as fixed expenses, `incomeCents` = their sum). „Venit implicit” was removed from Setări; `profile.defaultIncomeCents` is unused.
+- **Achitat (2026-10-12)**: each fixed expense of a month carries `paidOn` (date or null) toggled by a check button, on applied months too; the summary row reads „Achitate X din Y · de plătit Z”. The template never has it.
 - **Investiții (2026-10-02)**: a third category kind `investment`, not in the handoff. It behaves like a saving fund plus purchases (movements of type `purchase` with symbol, shares, price, fees; the balance is the „Buget disponibil”). Own page `/investitii` (5th navigation item) built in the design system's style; its copy was written by Claude and approved implicitly by the request.
 
 ## Ask the owner before

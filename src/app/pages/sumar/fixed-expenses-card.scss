@@ -11,6 +11,37 @@
   flex: none;
 }
 
+.paid {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  color: transparent;
+  margin-left: calc(-1 * var(--space-1));
+
+  &:hover:not(:disabled) {
+    color: var(--ink-muted);
+    background: var(--surface-hover);
+  }
+
+  &.on {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+
+    &:hover:not(:disabled) {
+      background: var(--accent-hover);
+      color: var(--on-accent);
+    }
+  }
+}
+
+.paid-summary {
+  min-height: 40px;
+  padding-top: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
 .total {
   background: var(--surface-sunken);
   border-radius: 0 0 calc(var(--radius-lg) - 1px) calc(var(--radius-lg) - 1px);

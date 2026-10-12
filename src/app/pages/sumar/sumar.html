@@ -83,7 +83,9 @@
         [readonly]="v.applied"
         [desktop]="desktop"
         [subtitle]="v.applied ? 'Fixate pentru ' + label() : 'Preluate din șablon'"
+        [trackPaid]="true"
         (changed)="setFixedExpenses($event)"
+        (paidChange)="setPaid($event)"
       />
 
       @if (!desktop) {

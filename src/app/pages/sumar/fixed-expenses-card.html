@@ -21,11 +21,13 @@
       </li>
     } @else if (readonly()) {
       <li class="bu-row">
+        <ng-container *ngTemplateOutlet="paidButton; context: { e: e, i: i }" />
         <span class="bu-grow">{{ e.name }}</span>
         <span class="bu-num">{{ eur(e.amountCents) }}</span>
       </li>
     } @else if (desktop()) {
       <li class="bu-row">
+        <ng-container *ngTemplateOutlet="paidButton; context: { e: e, i: i }" />
         <span class="bu-grow">{{ e.name }}</span>
         <span class="bu-input sm right amount">
           <input [buMoney]="e.amountCents" (centsChange)="setAmount(i, $event)" [attr.aria-label]="'Suma pentru ' + e.name" />
@@ -49,6 +51,7 @@
         (keydown.enter)="startEdit(i)"
         [attr.aria-label]="'Editează ' + e.name"
       >
+        <ng-container *ngTemplateOutlet="paidButton; context: { e: e, i: i }" />
         <span class="bu-grow">{{ e.name }}</span>
         <span class="bu-num">{{ eur(e.amountCents) }}</span>
         <bu-icon name="chevR" [size]="16" class="bu-muted" />
@@ -63,11 +66,32 @@
   @if (expenses().length === 0 && editing() !== 'new' && emptyText()) {
     <li class="bu-row"><span class="bu-grow bu-muted">{{ emptyText() }}</span></li>
   }
+  @if (trackPaid() && expenses().length > 0) {
+    <li class="bu-row paid-summary">
+      <span class="bu-grow label bu-muted">Achitate</span>
+      <span class="caption bu-muted bu-num">{{ paidSummary() }}</span>
+    </li>
+  }
   <li class="bu-row total">
     <span class="bu-grow label">Total</span>
     <span class="body-strong bu-num">{{ eur(total()) }}</span>
   </li>
 </ul>
+
+<ng-template #paidButton let-e="e" let-i="i">
+  @if (trackPaid()) {
+    <button
+      type="button"
+      class="bu-iconbtn paid"
+      [class.on]="!!e.paidOn"
+      (click)="togglePaid(i, $event)"
+      [attr.aria-pressed]="!!e.paidOn"
+      [attr.aria-label]="(e.paidOn ? 'Marchează ca neachitat: ' : 'Marchează ca achitat: ') + e.name"
+    >
+      <bu-icon name="check" [size]="16" />
+    </button>
+  }
+</ng-template>
 
 <ng-template #editor let-title="title" let-canDelete="canDelete">
   <span class="label">{{ title }}</span>

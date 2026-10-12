@@ -16,6 +16,7 @@ export function createPlannedMonth(key: string, profile: Profile, categories: re
       name: e.name,
       amountCents: e.amountCents,
       position: i,
+      paidOn: null,
     })),
     allocations: defaultAllocations(categories),
   };

@@ -55,6 +55,7 @@ function fakeStore(desktopMonths = months) {
     canGoForward: () => true,
     ensureMonth: vi.fn().mockResolvedValue(undefined),
     updateMonth: vi.fn().mockResolvedValue(undefined),
+    setExpensePaid: vi.fn().mockResolvedValue(undefined),
     applyMonth: vi.fn().mockResolvedValue(undefined),
     reopenMonth: vi.fn().mockResolvedValue(undefined),
   };
@@ -132,11 +133,22 @@ describe('Sumar', () => {
     await fixture.whenStable();
     expect(store.updateMonth).toHaveBeenCalledWith('2026-10', {
       incomes: [
-        { name: 'Salariu', amountCents: 1000000, position: 0 },
-        { name: 'Bonus', amountCents: 50000, position: 1 },
+        { name: 'Salariu', amountCents: 1000000, position: 0, paidOn: null },
+        { name: 'Bonus', amountCents: 50000, position: 1, paidOn: null },
       ],
       incomeCents: 1050000,
     });
+  });
+
+  it('marks a fixed expense as paid and shows the summary', async () => {
+    const { fixture, store, text } = await render('2026-10', true);
+    expect(text).toContain('Achitate');
+    expect(text).toContain('0 din 9 · de plătit 3.000,00 €');
+    const el = fixture.nativeElement as HTMLElement;
+    const button = el.querySelector('button[aria-label="Marchează ca achitat: Chirie"]') as HTMLButtonElement;
+    button.click();
+    await fixture.whenStable();
+    expect(store.setExpensePaid).toHaveBeenCalledWith('2026-10', 0, true);
   });
 
   it('opens the confirm dialog for „Aplică luna”', async () => {

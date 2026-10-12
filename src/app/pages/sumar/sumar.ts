@@ -119,6 +119,10 @@ export class Sumar {
     );
   }
 
+  protected setPaid({ index, paid }: { index: number; paid: boolean }): void {
+    void this.save(() => this.store.setExpensePaid(this.key(), index, paid));
+  }
+
   protected setFixedExpenses(fixedExpenses: FixedExpense[]): void {
     void this.save(() => this.store.updateMonth(this.key(), { fixedExpenses }));
   }

@@ -79,6 +79,7 @@ export function fakeStore() {
     canGoForward: () => true,
     ensureMonth: vi.fn().mockResolvedValue(undefined),
     updateMonth: vi.fn().mockResolvedValue(undefined),
+    setExpensePaid: vi.fn().mockResolvedValue(undefined),
     applyMonth: vi.fn().mockResolvedValue(undefined),
     reopenMonth: vi.fn().mockResolvedValue(undefined),
     saveProfile: vi.fn().mockResolvedValue(undefined),
