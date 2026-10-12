@@ -47,7 +47,7 @@ function fakeStore(desktopMonths = months) {
     categories: categoriesSignal,
     months: monthsSignal,
     movements: movementsSignal,
-    balances: computed(() => computeBalances(categoriesSignal(), movementsSignal())),
+    balances: computed(() => computeBalances(categoriesSignal(), movementsSignal(), monthsSignal())),
     currentMonthKey: signal('2026-10'),
     firstMonthKey: computed(() => monthsSignal()[0]?.key ?? null),
     monthByKey: (key: string) => monthsSignal().find((m) => m.key === key),
@@ -56,6 +56,7 @@ function fakeStore(desktopMonths = months) {
     ensureMonth: vi.fn().mockResolvedValue(undefined),
     updateMonth: vi.fn().mockResolvedValue(undefined),
     setExpensePaid: vi.fn().mockResolvedValue(undefined),
+    setUsed: vi.fn().mockResolvedValue(undefined),
     applyMonth: vi.fn().mockResolvedValue(undefined),
     reopenMonth: vi.fn().mockResolvedValue(undefined),
   };
@@ -90,13 +91,13 @@ describe('Sumar', () => {
     expect(text).toContain('Țintă atinsă: 800,00 € intră în fond, 600,00 € merg către Investiții');
     expect(text).toContain('Primește +600,00 € surplus din Fond de siguranță');
     expect(text).toContain('Sold după lună: 18.000,00 €');
-    expect(text).toContain('Buget lunar, fără sold');
+    expect(text).toContain('Utilizat');
   });
 
   it('renders the desktop table with the apply footer', async () => {
     const { fixture, text } = await render('2026-10', true);
     expect(fixture.nativeElement.querySelector('table.bu-table')).not.toBeNull();
-    expect(text).toContain('La aplicare, +5.600,00 € intră în 8 fonduri.');
+    expect(text).toContain('La aplicare, +7.000,00 € intră în 11 fonduri.');
     expect(text).toContain('Procent din rămasul de 7.000,00 €');
     const apply = fixture.nativeElement.querySelector('.bu-card-f button') as HTMLButtonElement;
     expect(apply.disabled).toBe(false);
@@ -140,6 +141,17 @@ describe('Sumar', () => {
     });
   });
 
+  it('saves what was used from a category and lowers its balance after the month', async () => {
+    const { fixture, store, text } = await render('2026-10', true);
+    const el = fixture.nativeElement as HTMLElement;
+    const used = el.querySelector('input[aria-label="Utilizat Vacanțe"]') as HTMLInputElement;
+    used.value = '200';
+    used.dispatchEvent(new Event('blur'));
+    await fixture.whenStable();
+    expect(store.setUsed).toHaveBeenCalledWith('2026-10', 'vacante', 20000);
+    expect(text).toContain('2.900,00 €');
+  });
+
   it('marks a fixed expense as paid and shows the summary', async () => {
     const { fixture, store, text } = await render('2026-10', true);
     expect(text).toContain('Achitate');
@@ -157,7 +169,7 @@ describe('Sumar', () => {
     await fixture.whenStable();
     const el = fixture.nativeElement as HTMLElement;
     expect(el.textContent).toContain('Aplici luna Octombrie 2026?');
-    expect(el.textContent).toContain('Se adaugă +5.600,00 € în 8 fonduri');
+    expect(el.textContent).toContain('Se adaugă +7.000,00 € în 11 fonduri');
     (el.querySelector('.bu-dialog .bu-btn.primary') as HTMLButtonElement).click();
     await fixture.whenStable();
     expect(store.applyMonth).toHaveBeenCalledWith('2026-10');

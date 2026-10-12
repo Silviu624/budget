@@ -95,42 +95,44 @@
 
 <div class="bu-sec-h">
   <h2 class="title-2">Bugete de cheltuieli</h2>
-  <span class="caption bu-muted">@if (desktop) { Alocări pentru {{ monthTitle() }} · fără sold } @else { {{ monthTitle() }} }</span>
+  <span class="caption bu-muted">@if (desktop) { Sold actual · alocările pentru {{ monthTitle() }} } @else { {{ monthTitle() }} }</span>
 </div>
 
 @if (desktop) {
   <div class="bu-grid3">
     @for (c of spending(); track c.id) {
       @let r = row(c);
-      <section class="bu-card bu-fcard">
+      <a class="bu-card bu-fcard clickable" [routerLink]="['/fonduri', c.id]">
         <div class="head">
           <span class="bu-kind spend"><bu-icon name="wallet" [size]="18" /></span>
           <span class="title-3 bu-grow">{{ c.name }}</span>
+          <bu-icon name="chevR" [size]="18" class="bu-muted" />
         </div>
         <div class="bu-between">
-          <span class="label bu-muted">Alocare</span>
-          <span class="amount-lg bu-num">{{ eur(r?.shareCents ?? 0) }}</span>
+          <span class="label bu-muted">Sold</span>
+          <span class="amount-lg bu-num">{{ eur(balance(c)) }}</span>
         </div>
-        <span class="caption bu-muted">{{ pct(r?.percent ?? c.percent) }} din rămas · fără sold</span>
-      </section>
+        <span class="caption bu-muted bu-num">{{ pct(r?.percent ?? c.percent) }} din rămas · alocare {{ eur(r?.shareCents ?? 0) }}</span>
+      </a>
     }
   </div>
 } @else {
   <section class="bu-card">
     @for (c of spending(); track c.id) {
       @let r = row(c);
-      <div class="bu-row">
+      <a class="bu-row link" [routerLink]="['/fonduri', c.id]">
         <span class="bu-kind spend sm"><bu-icon name="wallet" [size]="16" /></span>
         <div class="bu-grow stack">
           <span>{{ c.name }}</span>
-          <span class="caption bu-muted">{{ pct(r?.percent ?? c.percent) }} din rămas · fără sold</span>
+          <span class="caption bu-muted bu-num">{{ pct(r?.percent ?? c.percent) }} din rămas · alocare {{ eur(r?.shareCents ?? 0) }}</span>
         </div>
-        <span class="body-strong bu-num">{{ eur(r?.shareCents ?? 0) }}</span>
-      </div>
+        <span class="body-strong bu-num">{{ eur(balance(c)) }}</span>
+        <bu-icon name="chevR" [size]="16" class="bu-muted" />
+      </a>
     }
     <div class="bu-row total">
       <span class="bu-grow label">Total</span>
-      <span class="body-strong bu-num">{{ eur(v?.spendingSharesCents ?? 0) }}</span>
+      <span class="body-strong bu-num">{{ eur(spendingTotal()) }}</span>
     </div>
   </section>
 }

@@ -30,7 +30,7 @@ describe('Setări', () => {
     expect(text()).toContain('Chirie');
     expect(text()).toContain('3.000,00 €');
     expect(text()).toContain('Fond de economii · țintă 18.000,00 € · sold inițial 10.800,00 €');
-    expect(text()).toContain('Buget de cheltuieli');
+    expect(text()).toContain('Buget de cheltuieli · sold inițial 0,00 €');
     expect(text()).toContain('Total procente');
     expect(el.querySelector('.bu-card-f')?.textContent).toContain('100%');
     expect(el.querySelectorAll('[role="radio"]').length).toBe(3);

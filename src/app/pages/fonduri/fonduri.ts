@@ -41,6 +41,9 @@ export class Fonduri {
   protected readonly totalFunds = computed(() =>
     this.saving().reduce((sum, c) => sum + (this.store.balances()[c.id] ?? 0), 0),
   );
+  protected readonly spendingTotal = computed(() =>
+    this.spending().reduce((sum, c) => sum + (this.store.balances()[c.id] ?? 0), 0),
+  );
   protected readonly withdrawals = computed(() => {
     const year = this.key().slice(0, 4);
     const list = this.store

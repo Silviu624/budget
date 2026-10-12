@@ -221,11 +221,11 @@
           <bu-icon name="chevD" [size]="16" class="sfx" />
         </span>
       </label>
-      <label class="bu-field">
-        <span class="lbl">Sold inițial</span>
-        <span class="bu-input right"><input [buMoney]="d.initialBalanceCents" (centsChange)="patchDraft({ initialBalanceCents: $event })" /><span class="sfx">€</span></span>
-      </label>
     }
+    <label class="bu-field">
+      <span class="lbl">Sold inițial</span>
+      <span class="bu-input right"><input [buMoney]="d.initialBalanceCents" (centsChange)="patchDraft({ initialBalanceCents: $event })" /><span class="sfx">€</span></span>
+    </label>
   </div>
   @if (d.kind !== 'spending') {
     <span class="hint">

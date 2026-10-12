@@ -273,7 +273,7 @@ export class Setari {
       percent: d.percent,
       targetCents: d.kind !== 'spending' && d.targetCents > 0 ? d.targetCents : null,
       overflowToId: d.kind !== 'spending' ? d.overflowToId : null,
-      initialBalanceCents: d.kind !== 'spending' ? d.initialBalanceCents : 0,
+      initialBalanceCents: d.initialBalanceCents,
     };
     this.cError.set(null);
     const ok = await this.run(() => this.store.saveCategory(input, id).then(() => undefined));
@@ -327,9 +327,6 @@ export class Setari {
   }
 
   protected caption(category: Category): string {
-    if (category.kind === 'spending') {
-      return KIND_LABELS.spending;
-    }
     const parts = [KIND_LABELS[category.kind]];
     if (category.targetCents !== null) {
       parts.push(`țintă ${formatEUR(category.targetCents)}`);

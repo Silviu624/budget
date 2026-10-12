@@ -11,6 +11,7 @@
         <th>Categorie</th>
         <th class="r">Procent</th>
         <th class="r">Sumă</th>
+        <th class="r">Utilizat</th>
         <th class="r">{{ applied() ? 'Sold' : 'Sold după lună' }}</th>
       </tr>
     </thead>
@@ -19,6 +20,7 @@
         <td>Fonduri de economii</td>
         <td class="r bu-num">{{ pct(v.plan.savingPercent) }}</td>
         <td class="r bu-num">{{ eur(v.savingSharesCents) }}</td>
+        <td></td>
         <td></td>
       </tr>
       @for (row of v.savingRows; track row.category.id) {
@@ -37,8 +39,11 @@
           </td>
           <td class="r body-strong bu-num">{{ eur(row.shareCents) }}</td>
           <td class="r">
+            <ng-container *ngTemplateOutlet="usedCell; context: { row: row }" />
+          </td>
+          <td class="r">
             <div class="sold">
-              <span class="bu-num">{{ eur(row.balanceAfterCents ?? 0) }}</span>
+              <span class="bu-num">{{ eur(row.balanceAfterCents) }}</span>
               @if (row.targetReached) {
                 <span class="caption bu-muted">țintă atinsă</span>
               } @else if (row.targetPercent !== null) {
@@ -53,6 +58,7 @@
         <td class="r bu-num">{{ pct(v.plan.spendingPercent) }}</td>
         <td class="r bu-num">{{ eur(v.spendingSharesCents) }}</td>
         <td></td>
+        <td></td>
       </tr>
       @for (row of v.spendingRows; track row.category.id) {
         <tr>
@@ -66,13 +72,17 @@
             <ng-container *ngTemplateOutlet="percentCell; context: { row: row }" />
           </td>
           <td class="r body-strong bu-num">{{ eur(row.shareCents) }}</td>
-          <td class="r bu-muted">—</td>
+          <td class="r">
+            <ng-container *ngTemplateOutlet="usedCell; context: { row: row }" />
+          </td>
+          <td class="r bu-num">{{ eur(row.balanceAfterCents) }}</td>
         </tr>
       }
       <tr class="total">
         <td>Total</td>
         <td class="r bu-num">{{ pct(v.plan.percentTotal) }}</td>
         <td class="r bu-num">{{ eur(totalShares()) }}</td>
+        <td class="r bu-num">{{ eur(totalUsed()) }}</td>
         <td></td>
       </tr>
     </tbody>
@@ -80,7 +90,7 @@
   <div class="bu-card-f">
     @if (!applied()) {
       <p class="caption bu-muted footer-text">
-        La aplicare, <b class="bu-pos bu-num">{{ plus(v.savingPostedCents) }}</b> intră în {{ v.fundsCount }} fonduri.
+        La aplicare, <b class="bu-pos bu-num">{{ plus(v.postedTotalCents) }}</b> intră în {{ v.fundsCount }} fonduri.
         Poți edita luna și după.
       </p>
       <button type="button" class="bu-btn primary" [disabled]="!v.plan.canApply" (click)="apply.emit()">
@@ -89,7 +99,7 @@
       </button>
     } @else {
       <p class="caption bu-muted footer-text">
-        Pe {{ appliedDate() }} au intrat <b class="bu-pos bu-num">{{ plus(v.savingPostedCents) }}</b> în
+        Pe {{ appliedDate() }} au intrat <b class="bu-pos bu-num">{{ plus(v.postedTotalCents) }}</b> în
         {{ v.fundsCount }} fonduri.
       </p>
     }
@@ -111,6 +121,10 @@
           <span class="caption bu-muted bu-num">{{ soldLabel(row) }}</span>
           <ng-container *ngTemplateOutlet="percentCell; context: { row: row }" />
         </div>
+        <div class="bot">
+          <span class="caption bu-muted">Utilizat</span>
+          <ng-container *ngTemplateOutlet="usedCell; context: { row: row }" />
+        </div>
         <ng-container *ngTemplateOutlet="notes; context: { row: row }" />
       </div>
     </div>
@@ -128,8 +142,12 @@
           <span class="body-strong bu-num">{{ eur(row.shareCents) }}</span>
         </div>
         <div class="bot">
-          <span class="caption bu-muted">{{ soldLabel(row) }}</span>
+          <span class="caption bu-muted bu-num">{{ soldLabel(row) }}</span>
           <ng-container *ngTemplateOutlet="percentCell; context: { row: row }" />
+        </div>
+        <div class="bot">
+          <span class="caption bu-muted">Utilizat</span>
+          <ng-container *ngTemplateOutlet="usedCell; context: { row: row }" />
         </div>
       </div>
     </div>
@@ -153,6 +171,18 @@
       <span class="sfx">%</span>
     </span>
   }
+</ng-template>
+
+<ng-template #usedCell let-row="row">
+  <span class="bu-input xs right used">
+    <input
+      [buMoney]="row.usedCents"
+      [optional]="true"
+      (centsChange)="onUsed(row, $event)"
+      [attr.aria-label]="'Utilizat ' + row.category.name"
+    />
+    <span class="sfx">€</span>
+  </span>
 </ng-template>
 
 <ng-template #notes let-row="row">

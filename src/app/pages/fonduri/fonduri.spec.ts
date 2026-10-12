@@ -31,13 +31,13 @@ describe('Fonduri', () => {
     expect(text).toContain('Retrageri în 2026');
     expect(text).toContain('−4.480,00 €');
     expect(text).toContain('6 retrageri · ultima pe 19.09.2026');
-    expect(fixture.nativeElement.querySelectorAll('a.bu-fcard').length).toBe(8);
+    expect(fixture.nativeElement.querySelectorAll('a.bu-fcard').length).toBe(11);
     expect(text).toContain('95,6% din 18.000,00 €');
     expect(text).toContain('mai sunt 800,00 €');
     expect(text).toContain('Surplusul merge către Investiții: 600,00 €');
     expect(text).toContain('Include 600,00 € surplus din Fond de siguranță');
     expect(text).toContain('Fără țintă');
-    expect(text).toContain('10% din rămas · fără sold');
+    expect(text).toContain('10% din rămas · alocare 700,00 €');
   });
 
   it('shows the mobile hero and the spending list', async () => {
@@ -45,6 +45,7 @@ describe('Fonduri', () => {
     expect(text).toContain('Contribuții planificate în Octombrie');
     expect(text).toContain('8 fonduri');
     expect(text).toContain('Bani personali – Baby');
-    expect(text).toContain('1.400,00 €');
+    expect(text).toContain('alocare 350,00 €');
+    expect(text).toContain('Total0,00 €');
   });
 });

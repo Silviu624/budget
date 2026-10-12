@@ -41,7 +41,7 @@ describe('seed reproduces expected-octombrie-2026.json', () => {
   });
 
   it('balances before the month', () => {
-    expect(balances).toEqual(expected.balancesBeforeCents);
+    expect(balances).toMatchObject(expected.balancesBeforeCents);
     expect(Object.values(balances).reduce((s, b) => s + b, 0)).toBe(expected.fundsTotalCents);
   });
 

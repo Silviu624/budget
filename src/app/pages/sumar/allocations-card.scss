@@ -24,6 +24,10 @@ td .bu-input.xs {
   margin-left: auto;
 }
 
+.bu-input.used {
+  width: 112px;
+}
+
 .total {
   background: var(--surface);
   border-top: 1px solid var(--border);

@@ -18,10 +18,12 @@ import { buildMonthView } from '../sumar/month-view';
 
 /** One line of „Istoric mișcări”: a movement, the planned contribution, or the starting balance. */
 interface HistoryRow {
-  kind: 'contribution' | 'withdrawal' | 'purchase' | 'sale' | 'initial' | 'planned';
+  kind: 'contribution' | 'withdrawal' | 'purchase' | 'sale' | 'used' | 'initial' | 'planned';
   date: string;
   amountCents: number;
   note: string;
+  /** Newest first. */
+  sortKey: string;
 }
 
 /** Detaliu fond: balance and target, withdrawals, the category's settings and its movement history. */
@@ -105,7 +107,30 @@ export class FondDetaliu {
         date: monthLabel(this.key()),
         amountCents: row.postedCents,
         note: 'Planificată · intră la „Aplică luna”',
+        sortKey: '~planned',
       });
+    }
+    if (this.planned() && row && row.usedCents > 0) {
+      rows.push({
+        kind: 'used',
+        date: monthLabel(this.key()),
+        amountCents: -row.usedCents,
+        note: 'Utilizat · se scade la „Aplică luna”',
+        sortKey: '~used',
+      });
+    }
+    for (const m of this.store.months()) {
+      const a = m.allocations.find((x) => x.categoryId === category.id);
+      if (m.status === 'applied' && a?.usedCents) {
+        const day = (m.appliedAt ?? `${m.key}-01`).slice(0, 10);
+        rows.push({
+          kind: 'used',
+          date: formatDate(day),
+          amountCents: -a.usedCents,
+          note: `Utilizat în ${monthLabel(m.key)}`,
+          sortKey: `${day}T~`,
+        });
+      }
     }
     for (const m of this.store.movementsOf(category.id)) {
       let note = m.note;
@@ -119,13 +144,21 @@ export class FondDetaliu {
           note += ` · ${m.note}`;
         }
       }
-      rows.push({ kind: m.type, date: formatDate(m.occurredOn), amountCents: m.amountCents, note });
+      rows.push({
+        kind: m.type,
+        date: formatDate(m.occurredOn),
+        amountCents: m.amountCents,
+        note,
+        sortKey: `${m.occurredOn}T${m.createdAt}`,
+      });
     }
+    rows.sort((a, b) => b.sortKey.localeCompare(a.sortKey));
     rows.push({
       kind: 'initial',
       date: formatDate(category.createdOn),
       amountCents: category.initialBalanceCents,
       note: 'Sold la pornirea aplicației',
+      sortKey: '',
     });
     return rows;
   });
@@ -144,7 +177,7 @@ export class FondDetaliu {
     effect(() => {
       const category = this.category();
       const loaded = this.store.categories().length > 0;
-      if (loaded && (!category || category.kind === 'spending')) {
+      if (loaded && !category) {
         untracked(() => void this.router.navigateByUrl('/fonduri', { replaceUrl: true }));
       }
     });
@@ -163,6 +196,8 @@ export class FondDetaliu {
         return 'Cumpărare';
       case 'sale':
         return 'Vânzare';
+      case 'used':
+        return 'Utilizat';
       case 'initial':
         return 'Sold inițial';
       default:
@@ -171,7 +206,7 @@ export class FondDetaliu {
   }
 
   protected chipIcon(kind: HistoryRow['kind']): 'in' | 'out' | 'init' {
-    return kind === 'withdrawal' || kind === 'purchase' ? 'out' : kind === 'initial' ? 'init' : 'in';
+    return kind === 'withdrawal' || kind === 'purchase' || kind === 'used' ? 'out' : kind === 'initial' ? 'init' : 'in';
   }
 
   protected amountText(row: HistoryRow): string {

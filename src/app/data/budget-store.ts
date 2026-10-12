@@ -76,7 +76,9 @@ export class BudgetStore {
       this.profile() !== null,
   );
   readonly activeCategories = computed(() => activeByPosition(this.categories()));
-  readonly balances = computed(() => computeBalances(this.categories(), this.movements()));
+  readonly balances = computed(() =>
+    computeBalances(this.categories(), this.movements(), this.months()),
+  );
   /** yyyy-mm-dd in Europe/Bucharest, refreshed every minute. */
   readonly today = signal(todayISO());
   readonly currentMonthKey = computed(() => this.today().slice(0, 7));
@@ -283,6 +285,18 @@ export class BudgetStore {
     await updateDoc(monthRef(key), patch as DocumentData);
   }
 
+  /** „Utilizat”: what was spent from a category this month; editable on applied months too. */
+  async setUsed(key: string, categoryId: string, usedCents: number): Promise<void> {
+    const month = this.monthByKey(key);
+    if (!month) {
+      return;
+    }
+    const allocations = month.allocations.map((a) =>
+      a.categoryId === categoryId ? { ...a, usedCents } : a,
+    );
+    await updateDoc(monthRef(key), { allocations });
+  }
+
   /** Marks one fixed expense of a month as paid (today) or not; works on applied months too. */
   async setExpensePaid(key: string, index: number, paid: boolean): Promise<void> {
     const month = this.monthByKey(key);
@@ -323,22 +337,29 @@ export class BudgetStore {
       }
       const appliedAt = new Date().toISOString();
       const occurredOn = this.today();
-      const allocations: MonthAllocation[] = plan.rows.map((r) => ({
-        categoryId: r.categoryId,
-        percent: r.percent,
-        shareCents: r.shareCents,
-        contributionCents: r.contributionCents,
-        surplusOutCents: r.surplusOutCents,
-        surplusInCents: r.surplusInCents,
-        balanceAfterCents: r.balanceAfterCents,
-      }));
+      const used = new Map(month.allocations.map((a) => [a.categoryId, a.usedCents ?? 0]));
+      const allocations: MonthAllocation[] = plan.rows.map((r) => {
+        const spending = r.category.kind === 'spending';
+        const before = balances[r.categoryId] ?? 0;
+        return {
+          categoryId: r.categoryId,
+          percent: r.percent,
+          usedCents: used.get(r.categoryId) ?? 0,
+          shareCents: r.shareCents,
+          contributionCents: spending ? r.shareCents : r.contributionCents,
+          surplusOutCents: spending ? 0 : r.surplusOutCents,
+          surplusInCents: spending ? 0 : r.surplusInCents,
+          balanceAfterCents: spending ? before + r.shareCents : r.balanceAfterCents,
+        };
+      });
       tx.update(monthRef(key), { status: 'applied', appliedAt, allocations });
-      for (const row of plan.savingRows) {
-        if ((row.postedCents ?? 0) > 0) {
+      for (const row of plan.rows) {
+        const posted = row.category.kind === 'spending' ? row.shareCents : (row.postedCents ?? 0);
+        if (posted > 0) {
           const movement: Omit<Movement, 'id'> = {
             categoryId: row.categoryId,
             type: 'contribution',
-            amountCents: row.postedCents!,
+            amountCents: posted,
             occurredOn,
             note: monthLabel(key),
             monthKey: key,
@@ -368,6 +389,7 @@ export class BudgetStore {
       const allocations: MonthAllocation[] = month.allocations.map((a) => ({
         categoryId: a.categoryId,
         percent: a.percent,
+        usedCents: a.usedCents ?? 0,
       }));
       tx.update(monthRef(key), { status: 'planned', appliedAt: null, allocations });
     });
@@ -506,6 +528,6 @@ function normalizeCategory(input: CategoryInput): CategoryInput {
     percent: Math.round(input.percent * 10) / 10,
     targetCents: saving ? input.targetCents : null,
     overflowToId: saving ? input.overflowToId : null,
-    initialBalanceCents: saving ? input.initialBalanceCents : 0,
+    initialBalanceCents: input.initialBalanceCents,
   };
 }

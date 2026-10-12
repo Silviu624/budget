@@ -8,9 +8,9 @@ export const KIND_LABELS: Record<CategoryKind, string> = {
   investment: 'Investiții',
 };
 
-/** Saving and investment categories keep a running balance; spending ones are monthly allowances. */
-export function holdsBalance(kind: CategoryKind): boolean {
-  return kind !== 'spending';
+/** Every kind keeps a running balance: the month's share comes in, „Utilizat” goes out, the rest carries over. */
+export function holdsBalance(_kind: CategoryKind): boolean {
+  return true;
 }
 
 export interface Category {
@@ -49,6 +49,8 @@ export type MonthStatus = 'planned' | 'applied';
 export interface MonthAllocation {
   categoryId: string;
   percent: number;
+  /** What was actually spent from this category during the month; counted once the month is applied. */
+  usedCents?: number | null;
   shareCents?: number | null;
   contributionCents?: number | null;
   surplusOutCents?: number | null;

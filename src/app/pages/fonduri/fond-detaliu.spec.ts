@@ -32,6 +32,7 @@ describe('Detaliu fond', () => {
       'Mai sunt 800,00 € până la țintă. Contribuția planificată din Octombrie o atinge, iar restul de 600,00 € merge către Investiții.',
     );
     expect(text()).toContain('7 mișcări · cele mai noi primele');
+    expect(text()).toContain('Sold inițial');
     expect(text()).toContain('Planificată · intră la „Aplică luna”');
     expect(text()).toContain('Reparație centrală termică');
     expect(text()).toContain('Sold la pornirea aplicației');

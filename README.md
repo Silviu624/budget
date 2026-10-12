@@ -3,7 +3,9 @@
 A shared monthly-budget web app for a couple with one login. Each month starts at zero income;
 you add the amounts as they arrive, subtract the fixed expenses, and split what remains by percentages into saving buckets (with
 balances, targets and overflow), investment buckets (a budget you buy shares from, with the
-portfolio and purchases tracked in Investiții) and spending buckets (monthly allowances). The UI is in Romanian,
+portfolio and purchases tracked in Investiții) and spending buckets. Every category keeps a
+balance: the share comes in when the month is applied, „Utilizat” records what was spent, and
+the rest carries over. The UI is in Romanian,
 the currency is euro.
 
 Live site: https://silviu624.github.io/budget/

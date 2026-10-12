@@ -21,7 +21,7 @@ import { ConfirmDialog } from '../../shared/confirm-dialog';
 import { Icon } from '../../shared/icon';
 import { StatusChip } from '../../shared/status-chip';
 import { BottomSlot, ShellService, TopSlot } from '../../shell/shell.service';
-import { AllocationsCard, type PercentChange } from './allocations-card';
+import { AllocationsCard, type PercentChange, type UsedChange } from './allocations-card';
 import { FixedExpensesCard } from './fixed-expenses-card';
 import { buildMonthView } from './month-view';
 
@@ -138,6 +138,10 @@ export class Sumar {
     void this.save(() => this.store.updateMonth(this.key(), { allocations }));
   }
 
+  protected setUsed({ categoryId, usedCents }: UsedChange): void {
+    void this.save(() => this.store.setUsed(this.key(), categoryId, usedCents));
+  }
+
   protected async confirmDialog(): Promise<void> {
     const which = this.dialog();
     if (!which || this.busy()) {
@@ -165,7 +169,7 @@ export class Sumar {
   }
 
   protected dialogBody(): string {
-    const posted = formatEUR(this.view()?.savingPostedCents ?? 0, { sign: true });
+    const posted = formatEUR(this.view()?.postedTotalCents ?? 0, { sign: true });
     const count = this.view()?.fundsCount ?? 0;
     return this.dialog() === 'apply'
       ? `Se adaugă ${posted} în ${count} fonduri, iar luna devine doar pentru citire. O poți edita oricând.`

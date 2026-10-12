@@ -3,7 +3,7 @@ import { Component, computed, input, output } from '@angular/core';
 import { formatDate } from '../../domain/dates';
 import { formatEUR, formatPercent } from '../../domain/money';
 import { Icon, kindIcon } from '../../shared/icon';
-import { PercentInput } from '../../shared/money-input';
+import { MoneyInput, PercentInput } from '../../shared/money-input';
 import type { MonthView, RowView } from './month-view';
 
 export interface PercentChange {
@@ -11,10 +11,15 @@ export interface PercentChange {
   percent: number;
 }
 
+export interface UsedChange {
+  categoryId: string;
+  usedCents: number;
+}
+
 /** „Alocări”: every category's share this month, grouped, with the overflow notes and the apply footer on desktop. */
 @Component({
   selector: 'app-allocations-card',
-  imports: [NgTemplateOutlet, Icon, PercentInput],
+  imports: [NgTemplateOutlet, Icon, PercentInput, MoneyInput],
   templateUrl: './allocations-card.html',
   styleUrl: './allocations-card.scss',
   host: { class: 'bu-card' },
@@ -23,6 +28,7 @@ export class AllocationsCard {
   readonly view = input.required<MonthView>();
   readonly desktop = input(false);
   readonly percentChange = output<PercentChange>();
+  readonly usedChange = output<UsedChange>();
   readonly apply = output<void>();
 
   protected readonly eur = formatEUR;
@@ -38,6 +44,7 @@ export class AllocationsCard {
   protected readonly totalShares = computed(
     () => this.view().savingSharesCents + this.view().spendingSharesCents,
   );
+  protected readonly totalUsed = computed(() => this.view().rows.reduce((s, r) => s + r.usedCents, 0));
 
   protected keptVerb(): string {
     if (this.desktop()) {
@@ -54,14 +61,15 @@ export class AllocationsCard {
   }
 
   protected soldLabel(row: RowView): string {
-    if (!row.saving) {
-      return 'Buget lunar, fără sold';
-    }
-    const amount = formatEUR(row.balanceAfterCents ?? 0);
+    const amount = formatEUR(row.balanceAfterCents);
     return this.applied() ? `Sold: ${amount}` : `Sold după lună: ${amount}`;
   }
 
   protected onPercent(row: RowView, percent: number): void {
     this.percentChange.emit({ categoryId: row.category.id, percent });
+  }
+
+  protected onUsed(row: RowView, usedCents: number): void {
+    this.usedChange.emit({ categoryId: row.category.id, usedCents });
   }
 }
