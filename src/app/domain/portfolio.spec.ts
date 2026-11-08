@@ -1,33 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import {
-  buildPositions,
-  formatShares,
-  parseShares,
-  purchaseTotalCents,
-  saleProceedsCents,
-} from './portfolio';
-import type { Movement, MovementType } from './types';
+import { buildPositions, formatShares, parseShares, purchaseTotalCents, saleProceedsCents } from './portfolio';
+import type { Trade, TradeType } from './types';
 
-function trade(
-  type: Extract<MovementType, 'purchase' | 'sale'>,
-  symbol: string,
-  shares: number,
-  priceCents: number,
-  feesCents: number,
-  occurredOn: string,
-): Movement {
-  const value = Math.round(shares * priceCents);
-  return {
-    id: `${type}-${symbol}-${occurredOn}`,
-    categoryId: 'investitii',
-    type,
-    amountCents: type === 'purchase' ? -(value + feesCents) : value - feesCents,
-    occurredOn,
-    note: '',
-    monthKey: null,
-    createdAt: occurredOn,
-    trade: { symbol, shares, priceCents, feesCents },
-  };
+function trade(type: TradeType, symbol: string, shares: number, priceCents: number, feesCents: number, occurredOn: string): Trade {
+  return { id: `${type}-${symbol}-${occurredOn}`, type, symbol, shares, priceCents, feesCents, occurredOn, note: '', createdAt: occurredOn };
 }
 
 describe('portfolio', () => {

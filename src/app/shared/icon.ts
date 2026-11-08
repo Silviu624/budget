@@ -45,9 +45,9 @@ export const ICONS = {
 
 export type IconName = keyof typeof ICONS;
 
-/** The fixed kind icons: vault = Fond de economii, wallet = Buget de cheltuieli, chart = Investiții. */
+/** The fixed kind icons: vault = Fond de economii, wallet = Buget de cheltuieli. */
 export function kindIcon(kind: CategoryKind): IconName {
-  return kind === 'spending' ? 'wallet' : kind === 'investment' ? 'chart' : 'vault';
+  return kind === 'spending' ? 'wallet' : 'vault';
 }
 
 @Component({

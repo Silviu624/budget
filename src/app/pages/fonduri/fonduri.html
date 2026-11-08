@@ -61,7 +61,7 @@
           <bu-icon name="chevR" [size]="18" class="bu-muted" />
         </div>
         <div class="bu-between">
-          <span class="label bu-muted">{{ c.kind === 'investment' ? 'Buget disponibil' : 'Sold' }}</span>
+          <span class="label bu-muted">Sold</span>
           <span class="amount-lg bu-num">{{ eur(balance(c)) }}</span>
         </div>
         <bu-target-progress [balance]="balance(c)" [target]="c.targetCents" />

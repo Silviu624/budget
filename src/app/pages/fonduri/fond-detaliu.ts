@@ -6,7 +6,6 @@ import { map } from 'rxjs';
 import { BudgetStore, NETWORK_ERROR } from '../../data/budget-store';
 import { formatDate, MONTH_NAMES, monthLabel, parseMonthKey } from '../../domain/dates';
 import { formatEUR, formatPercent } from '../../domain/money';
-import { formatShares } from '../../domain/portfolio';
 import { KIND_LABELS } from '../../domain/types';
 import { Breakpoint } from '../../shared/breakpoint';
 import { Icon, kindIcon } from '../../shared/icon';
@@ -18,7 +17,7 @@ import { buildMonthView } from '../sumar/month-view';
 
 /** One line of „Istoric mișcări”: a movement, the planned contribution, or the starting balance. */
 interface HistoryRow {
-  kind: 'contribution' | 'withdrawal' | 'purchase' | 'sale' | 'used' | 'initial' | 'planned';
+  kind: 'contribution' | 'withdrawal' | 'used' | 'initial' | 'planned';
   date: string;
   amountCents: number;
   note: string;
@@ -133,22 +132,11 @@ export class FondDetaliu {
       }
     }
     for (const m of this.store.movementsOf(category.id)) {
-      let note = m.note;
-      if ((m.type === 'purchase' || m.type === 'sale') && m.trade) {
-        const p = m.trade;
-        note = `${p.symbol} · ${formatShares(p.shares)} × ${formatEUR(p.priceCents)}`;
-        if (p.feesCents > 0) {
-          note += ` · taxe ${formatEUR(p.feesCents)}`;
-        }
-        if (m.note) {
-          note += ` · ${m.note}`;
-        }
-      }
       rows.push({
         kind: m.type,
         date: formatDate(m.occurredOn),
         amountCents: m.amountCents,
-        note,
+        note: m.note,
         sortKey: `${m.occurredOn}T${m.createdAt}`,
       });
     }
@@ -192,10 +180,6 @@ export class FondDetaliu {
     switch (kind) {
       case 'withdrawal':
         return 'Retragere';
-      case 'purchase':
-        return 'Cumpărare';
-      case 'sale':
-        return 'Vânzare';
       case 'used':
         return 'Utilizat';
       case 'initial':
@@ -206,7 +190,7 @@ export class FondDetaliu {
   }
 
   protected chipIcon(kind: HistoryRow['kind']): 'in' | 'out' | 'init' {
-    return kind === 'withdrawal' || kind === 'purchase' || kind === 'used' ? 'out' : kind === 'initial' ? 'init' : 'in';
+    return kind === 'withdrawal' || kind === 'used' ? 'out' : kind === 'initial' ? 'init' : 'in';
   }
 
   protected amountText(row: HistoryRow): string {

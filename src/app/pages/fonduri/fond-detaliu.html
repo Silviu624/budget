@@ -25,12 +25,9 @@
             <h1 class="title-1">{{ c.name }}</h1>
             <span class="caption bu-muted">{{ kindLabel() }} · {{ pct(row()?.percent ?? c.percent) }} din rămas</span>
           </div>
-          @if (c.kind === 'investment') {
-            <a class="bu-btn ghost sm" routerLink="/investitii"><bu-icon name="chart" [size]="16" /><span>Investiții</span></a>
-          }
         </div>
         <div class="sold">
-          <span class="label bu-muted">{{ c.kind === 'investment' ? 'Buget disponibil' : 'Sold' }}</span>
+          <span class="label bu-muted">Sold</span>
           <span class="bu-num" [class.display]="desktop" [class.amount-xl]="!desktop">{{ eur(balance()) }}</span>
         </div>
         @if (c.targetCents !== null) {
@@ -69,7 +66,7 @@
                 <tr [class.planned]="h.kind === 'planned'">
                   <td class="bu-num" [class.bu-muted]="h.kind === 'planned'">{{ h.date }}</td>
                   <td><span class="bu-chip neutral"><bu-icon [name]="chipIcon(h.kind)" [size]="14" />{{ chipLabel(h.kind) }}</span></td>
-                  <td class="r body-strong bu-num" [class.bu-pos]="h.kind === 'contribution' || h.kind === 'sale'" [class.bu-neg]="h.kind === 'withdrawal' || h.kind === 'purchase' || h.kind === 'used'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</td>
+                  <td class="r body-strong bu-num" [class.bu-pos]="h.kind === 'contribution'" [class.bu-neg]="h.kind === 'withdrawal' || h.kind === 'used'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</td>
                   <td [class.bu-muted]="h.kind === 'planned'">{{ h.note }}</td>
                 </tr>
               }
@@ -82,7 +79,7 @@
                 <span class="bu-chip neutral"><bu-icon [name]="chipIcon(h.kind)" [size]="14" />{{ chipLabel(h.kind) }}</span>
                 <span class="date bu-num">{{ h.date }}</span>
               </div>
-              <span class="body-strong bu-num" [class.bu-pos]="h.kind === 'contribution' || h.kind === 'sale'" [class.bu-neg]="h.kind === 'withdrawal' || h.kind === 'purchase' || h.kind === 'used'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</span>
+              <span class="body-strong bu-num" [class.bu-pos]="h.kind === 'contribution'" [class.bu-neg]="h.kind === 'withdrawal' || h.kind === 'used'" [class.bu-muted]="h.kind === 'planned'">{{ amountText(h) }}</span>
               <span class="note" [class.bu-muted]="h.kind === 'planned'">{{ h.note }}</span>
             </div>
           }

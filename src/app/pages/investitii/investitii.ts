@@ -1,6 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject, linkedSignal, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { BudgetStore, NETWORK_ERROR } from '../../data/budget-store';
 import { formatDate } from '../../domain/dates';
 import { formatEUR } from '../../domain/money';
@@ -13,7 +12,7 @@ import {
   saleProceedsCents,
   tradeValueCents,
 } from '../../domain/portfolio';
-import type { Movement, TradeDetails } from '../../domain/types';
+import type { Trade, TradeDetails, TradeType } from '../../domain/types';
 import { Breakpoint } from '../../shared/breakpoint';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
 import { Icon } from '../../shared/icon';
@@ -21,12 +20,13 @@ import { MoneyInput } from '../../shared/money-input';
 import { Toast } from '../../shared/toast';
 import { ShellService } from '../../shell/shell.service';
 
-type TradeType = 'purchase' | 'sale';
-
-/** Investiții: the investment budget, the trades made with it, and the resulting portfolio. */
+/**
+ * Investiții: a ledger of purchases and sales and the portfolio they add up to. It never touches a
+ * category balance; the money set aside for investing is a fixed expense ticked each month.
+ */
 @Component({
   selector: 'app-investitii',
-  imports: [NgTemplateOutlet, RouterLink, Icon, MoneyInput, ConfirmDialog],
+  imports: [NgTemplateOutlet, Icon, MoneyInput, ConfirmDialog],
   templateUrl: './investitii.html',
   styleUrl: './investitii.scss',
 })
@@ -39,26 +39,21 @@ export class Investitii {
   protected readonly date = formatDate;
   protected readonly shares = formatShares;
 
-  /** Every active category of kind Investiții. */
-  protected readonly funds = computed(() =>
-    this.store.activeCategories().filter((c) => c.kind === 'investment'),
-  );
-  protected readonly fundId = linkedSignal(() => this.funds()[0]?.id ?? null);
-  protected readonly trades = computed(() => {
-    const ids = new Set(this.funds().map((f) => f.id));
-    return this.store
-      .movements()
-      .filter((m) => (m.type === 'purchase' || m.type === 'sale') && m.trade && ids.has(m.categoryId));
-  });
-  protected readonly availableCents = computed(() =>
-    this.funds().reduce((sum, f) => sum + (this.store.balances()[f.id] ?? 0), 0),
-  );
+  protected readonly trades = this.store.trades;
   protected readonly positions = computed(() => buildPositions(this.trades()));
   protected readonly held = computed(() => this.positions().filter((p) => p.shares > 0));
   protected readonly costCents = computed(() => this.held().reduce((sum, p) => sum + p.costCents, 0));
-  protected readonly feesCents = computed(() =>
-    this.trades().reduce((sum, m) => sum + m.trade!.feesCents, 0),
+  protected readonly boughtCents = computed(() =>
+    this.trades()
+      .filter((t) => t.type === 'purchase')
+      .reduce((sum, t) => sum + purchaseTotalCents(t), 0),
   );
+  protected readonly soldCents = computed(() =>
+    this.trades()
+      .filter((t) => t.type === 'sale')
+      .reduce((sum, t) => sum + saleProceedsCents(t), 0),
+  );
+  protected readonly feesCents = computed(() => this.trades().reduce((sum, t) => sum + t.feesCents, 0));
 
   // ----------------------------------------------------------------- form
   protected readonly mode = signal<TradeType>('purchase');
@@ -79,32 +74,17 @@ export class Investitii {
     }
   });
   protected readonly tradeValue = computed(() => Math.round(this.sharesValue() * this.priceCents()));
-  /** Money leaving (purchase) or entering (sale) the budget. */
+  /** Cost of a purchase, or proceeds of a sale. */
   protected readonly tradeTotal = computed(() =>
     this.mode() === 'purchase'
       ? this.tradeValue() + this.tradeFeesCents()
       : Math.max(0, this.tradeValue() - this.tradeFeesCents()),
   );
-  protected readonly fundBalance = computed(() => this.store.balances()[this.fundId() ?? ''] ?? 0);
-  protected readonly afterCents = computed(() =>
-    this.mode() === 'purchase'
-      ? this.fundBalance() - this.tradeTotal()
-      : this.fundBalance() + this.tradeTotal(),
-  );
-  /** Symbols currently held in the selected fund, for the sale form. */
-  protected readonly heldInFund = computed(() => {
-    const id = this.fundId();
-    return id ? buildPositions(this.store.movementsOf(id)).filter((p) => p.shares > 0) : [];
-  });
 
-  protected readonly deleting = signal<Movement | null>(null);
+  protected readonly deleting = signal<Trade | null>(null);
 
   constructor() {
     inject(ShellService).title.set('Investiții');
-  }
-
-  protected fundName(id: string): string {
-    return this.store.categoryById(id)?.name ?? '';
   }
 
   protected setMode(mode: TradeType): void {
@@ -122,8 +102,7 @@ export class Investitii {
   }
 
   protected async submit(): Promise<void> {
-    const fundId = this.fundId();
-    if (this.busy() || !fundId) {
+    if (this.busy()) {
       return;
     }
     const symbol = normalizeSymbol(this.symbol());
@@ -142,24 +121,12 @@ export class Investitii {
       this.error.set('Prețul trebuie să fie mai mare decât 0.');
       return;
     }
-    const details: TradeDetails = {
-      symbol,
-      shares,
-      priceCents: this.priceCents(),
-      feesCents: this.tradeFeesCents(),
-    };
-    if (this.mode() === 'purchase') {
-      if (purchaseTotalCents(details) > this.fundBalance()) {
-        this.error.set(`Suma depășește bugetul disponibil (${formatEUR(this.fundBalance())}).`);
-        return;
-      }
-    } else {
-      const held = this.heldInFund().find((p) => p.symbol === symbol);
+    const details: TradeDetails = { symbol, shares, priceCents: this.priceCents(), feesCents: this.tradeFeesCents() };
+    if (this.mode() === 'sale') {
+      const held = this.held().find((p) => p.symbol === symbol);
       if (!held || held.shares < shares) {
         this.error.set(
-          held
-            ? `Nu ai atâtea acțiuni ${symbol} (deții ${formatShares(held.shares)}).`
-            : `Nu ai acțiuni ${symbol} în acest fond.`,
+          held ? `Nu ai atâtea acțiuni ${symbol} (deții ${formatShares(held.shares)}).` : `Nu ai acțiuni ${symbol}.`,
         );
         return;
       }
@@ -170,7 +137,7 @@ export class Investitii {
     }
     this.busy.set(true);
     try {
-      await this.store.addTrade(fundId, this.mode(), details, this.note(), this.occurredOn());
+      await this.store.addTrade(this.mode(), details, this.note(), this.occurredOn());
       this.reset();
       this.toast.show(this.mode() === 'purchase' ? 'Cumpărarea a fost adăugată.' : 'Vânzarea a fost adăugată.');
     } catch (err) {
@@ -181,28 +148,23 @@ export class Investitii {
   }
 
   protected deleteTitle(): string {
-    const m = this.deleting();
-    return m?.trade ? `Ștergi tranzacția „${m.trade.symbol}” din ${formatDate(m.occurredOn)}?` : '';
+    const t = this.deleting();
+    return t ? `Ștergi tranzacția „${t.symbol}” din ${formatDate(t.occurredOn)}?` : '';
   }
 
   protected deleteBody(): string {
-    const m = this.deleting();
-    if (!m) {
-      return '';
-    }
-    return m.type === 'purchase'
-      ? `Suma de ${formatEUR(-m.amountCents)} se întoarce în bugetul disponibil.`
-      : `Suma de ${formatEUR(m.amountCents)} se scade din bugetul disponibil.`;
+    const t = this.deleting();
+    return t ? `${formatShares(t.shares)} × ${formatEUR(t.priceCents)} dispar din portofoliu.` : '';
   }
 
   protected async confirmDelete(): Promise<void> {
-    const m = this.deleting();
-    if (!m) {
+    const t = this.deleting();
+    if (!t) {
       return;
     }
     this.deleting.set(null);
     try {
-      await this.store.deleteMovement(m.id);
+      await this.store.deleteTrade(t.id);
       this.toast.show('Tranzacția a fost ștearsă.');
     } catch (err) {
       console.error(err);
@@ -210,12 +172,11 @@ export class Investitii {
     }
   }
 
-  protected tradeLabel(m: Movement): string {
-    return m.type === 'sale' ? 'Vânzare' : 'Cumpărare';
+  protected tradeLabel(t: Trade): string {
+    return t.type === 'sale' ? 'Vânzare' : 'Cumpărare';
   }
 
-  protected tradeLine(m: Movement): string {
-    const t = m.trade!;
+  protected tradeLine(t: Trade): string {
     let text = `${formatShares(t.shares)} × ${formatEUR(t.priceCents)}`;
     if (t.feesCents > 0) {
       text += ` · taxe ${formatEUR(t.feesCents)}`;
@@ -223,7 +184,12 @@ export class Investitii {
     return text;
   }
 
-  protected tradeValueOf(m: Movement): number {
-    return tradeValueCents(m.trade!);
+  /** Signed cash effect: purchases cost money, sales bring it back. */
+  protected tradeAmount(t: Trade): number {
+    return t.type === 'purchase' ? -purchaseTotalCents(t) : saleProceedsCents(t);
+  }
+
+  protected tradeValueOf(t: Trade): number {
+    return tradeValueCents(t);
   }
 }

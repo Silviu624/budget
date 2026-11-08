@@ -13,6 +13,7 @@ import type {
   Movement,
   MovementType,
   Profile,
+  Trade,
 } from '../domain/types';
 
 /** The design's seed as domain objects. */
@@ -60,7 +61,9 @@ export function fakeStore() {
   const months = signal(seedMonths);
   const movements = signal([...seedMovements].reverse());
   const today = signal('2026-10-02');
+  const trades = signal<Trade[]>([]);
   return {
+    trades,
     profile,
     categories,
     months,
@@ -90,6 +93,7 @@ export function fakeStore() {
     reorderCategories: vi.fn().mockResolvedValue(undefined),
     addWithdrawal: vi.fn().mockResolvedValue(undefined),
     addTrade: vi.fn().mockResolvedValue(undefined),
+    deleteTrade: vi.fn().mockResolvedValue(undefined),
     deleteMovement: vi.fn().mockResolvedValue(undefined),
   };
 }

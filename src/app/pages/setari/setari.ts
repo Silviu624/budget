@@ -48,7 +48,6 @@ export class Setari {
   protected readonly kinds: { value: CategoryKind; label: string }[] = [
     { value: 'saving', label: KIND_LABELS.saving },
     { value: 'spending', label: KIND_LABELS.spending },
-    { value: 'investment', label: KIND_LABELS.investment },
   ];
   protected readonly themes: { value: ThemeChoice; label: string }[] = [
     { value: 'auto', label: 'Automată' },

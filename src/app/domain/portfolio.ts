@@ -1,16 +1,16 @@
-import type { Movement, TradeDetails } from './types';
+import type { Trade, TradeDetails } from './types';
 
 /** Shares × price, rounded to cents. */
 export function tradeValueCents(details: TradeDetails): number {
   return Math.round(details.shares * details.priceCents);
 }
 
-/** What leaves the budget on a purchase: shares × price + fees. */
+/** What a purchase cost: shares × price + fees. */
 export function purchaseTotalCents(details: TradeDetails): number {
   return tradeValueCents(details) + details.feesCents;
 }
 
-/** What comes back on a sale: shares × price − fees. */
+/** What a sale brought in: shares × price − fees. */
 export function saleProceedsCents(details: TradeDetails): number {
   return tradeValueCents(details) - details.feesCents;
 }
@@ -30,13 +30,12 @@ export interface Position {
 }
 
 /** Holdings per symbol (symbols fully sold are kept with 0 shares), largest cost first. */
-export function buildPositions(movements: readonly Movement[]): Position[] {
+export function buildPositions(trades: readonly Trade[]): Position[] {
   const bySymbol = new Map<string, Position & { boughtCostCents: number }>();
-  const trades = movements
-    .filter((m) => (m.type === 'purchase' || m.type === 'sale') && m.trade)
-    .sort((a, b) => a.occurredOn.localeCompare(b.occurredOn) || a.createdAt.localeCompare(b.createdAt));
-  for (const m of trades) {
-    const t = m.trade!;
+  const ordered = [...trades].sort(
+    (a, b) => a.occurredOn.localeCompare(b.occurredOn) || a.createdAt.localeCompare(b.createdAt),
+  );
+  for (const t of ordered) {
     const symbol = normalizeSymbol(t.symbol);
     const p = bySymbol.get(symbol) ?? {
       symbol,
@@ -49,7 +48,7 @@ export function buildPositions(movements: readonly Movement[]): Position[] {
       boughtCostCents: 0,
     };
     p.feesCents += t.feesCents;
-    if (m.type === 'purchase') {
+    if (t.type === 'purchase') {
       p.boughtShares = roundShares(p.boughtShares + t.shares);
       p.boughtCostCents += tradeValueCents(t);
       p.shares = roundShares(p.shares + t.shares);

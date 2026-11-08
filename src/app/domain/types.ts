@@ -1,11 +1,10 @@
 /** Domain types shared by the pure engine, the Firestore layer and the UI. All money is integer euro cents. */
 
-export type CategoryKind = 'saving' | 'spending' | 'investment';
+export type CategoryKind = 'saving' | 'spending';
 
 export const KIND_LABELS: Record<CategoryKind, string> = {
   saving: 'Fond de economii',
   spending: 'Buget de cheltuieli',
-  investment: 'Investiții',
 };
 
 /** Every kind keeps a running balance: the month's share comes in, „Utilizat” goes out, the rest carries over. */
@@ -73,9 +72,11 @@ export interface Month {
   allocations: MonthAllocation[];
 }
 
-export type MovementType = 'contribution' | 'withdrawal' | 'purchase' | 'sale';
+export type MovementType = 'contribution' | 'withdrawal';
 
-/** A trade in an investment category: shares of one symbol at one price, plus fees. */
+export type TradeType = 'purchase' | 'sale';
+
+/** Shares of one symbol at one price, plus fees. */
 export interface TradeDetails {
   symbol: string;
   /** May be fractional (up to 6 decimals). */
@@ -88,7 +89,7 @@ export interface Movement {
   id: string;
   categoryId: string;
   type: MovementType;
-  /** Signed: contributions and sales positive, withdrawals and purchases negative. */
+  /** Signed: contributions positive, withdrawals negative. */
   amountCents: number;
   /** ISO date (yyyy-mm-dd). */
   occurredOn: string;
@@ -97,8 +98,20 @@ export interface Movement {
   monthKey: string | null;
   /** ISO date-time. */
   createdAt: string;
-  /** Set for purchases and sales. */
-  trade?: TradeDetails | null;
+}
+
+/**
+ * A purchase or sale on the Investiții page. Trades are a ledger of their own: they never touch a
+ * category balance; the money for investing is a fixed expense ticked each month.
+ */
+export interface Trade extends TradeDetails {
+  id: string;
+  type: TradeType;
+  /** ISO date (yyyy-mm-dd). */
+  occurredOn: string;
+  note: string;
+  /** ISO date-time. */
+  createdAt: string;
 }
 
 export type ThemeChoice = 'auto' | 'light' | 'dark';

@@ -2,8 +2,8 @@
 
 A shared monthly-budget web app for a couple with one login. Each month starts at zero income;
 you add the amounts as they arrive, subtract the fixed expenses, and split what remains by percentages into saving buckets (with
-balances, targets and overflow), investment buckets (a budget you buy shares from, with the
-portfolio and purchases tracked in Investiții) and spending buckets. Every category keeps a
+balances, targets and overflow) and spending buckets. Investiții is a separate ledger of share
+purchases and sales that adds up to a portfolio; the money for investing is a fixed-expense line. Every category keeps a
 balance: the share comes in when the month is applied, „Utilizat” records what was spent, and
 the rest carries over. The UI is in Romanian,
 the currency is euro.
@@ -61,10 +61,10 @@ All money is integer euro cents. Firestore collections:
 
 ```
 settings/profile     display name, default income, theme, fixed-expense template
-categories/{id}      name, kind (saving | spending | investment), percent, target, overflow, initial balance, position
+categories/{id}      name, kind (saving | spending), percent, target, overflow, initial balance, position
 months/{yyyy-mm}     incomes (+ their sum), status (planned | applied), fixed expenses, allocations (+ stored results once applied)
-movements/{id}       contributions posted by „Aplică luna”, withdrawals, purchases and sales (symbol,
-                     shares, price, fees); a balance = initial + Σ movements
+movements/{id}       contributions posted by „Aplică luna” and withdrawals; a balance = initial + Σ movements − used
+trades/{id}          Investiții purchases and sales (symbol, shares, price, fees); no effect on balances
 ```
 
 The allocation engine (shares with largest-remainder rounding, targets, overflow chains) lives in

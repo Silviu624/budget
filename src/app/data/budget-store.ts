@@ -18,16 +18,17 @@ import { computeBalances } from '../domain/balances';
 import { addMonths, compareMonthKeys, monthLabel, todayISO } from '../domain/dates';
 import { formatEUR } from '../domain/money';
 import { activeByPosition, createPlannedMonth, reconcileAllocations } from '../domain/month';
-import { buildPositions, normalizeSymbol, purchaseTotalCents, saleProceedsCents } from '../domain/portfolio';
+import { buildPositions, normalizeSymbol } from '../domain/portfolio';
 import type {
   Category,
   FixedExpense,
   Month,
   MonthAllocation,
   Movement,
-  MovementType,
   Profile,
+  Trade,
   TradeDetails,
+  TradeType,
 } from '../domain/types';
 import { DEFAULT_PROFILE, defaultCategories } from './defaults';
 
@@ -43,6 +44,17 @@ const profileRef = () => doc(db, 'settings', 'profile');
 const categoryRef = (id: string) => doc(db, 'categories', id);
 const monthRef = (key: string) => doc(db, 'months', key);
 const movementRef = (id: string) => doc(db, 'movements', id);
+const tradeRef = (id: string) => doc(db, 'trades', id);
+
+/** Movements written before trades became a ledger of their own. */
+interface LegacyTradeMovement {
+  type: string;
+  occurredOn: string;
+  note?: string;
+  createdAt: string;
+  trade?: TradeDetails | null;
+  purchase?: TradeDetails | null;
+}
 
 /**
  * Live view of the household's Firestore data plus every write the app performs.
@@ -58,6 +70,7 @@ export class BudgetStore {
   private readonly categoriesLoaded = signal(false);
   private readonly monthsLoaded = signal(false);
   private readonly movementsLoaded = signal(false);
+  private migratingTrades = false;
 
   readonly profile = signal<Profile | null>(null);
   readonly categories = signal<Category[]>([]);
@@ -65,6 +78,8 @@ export class BudgetStore {
   readonly months = signal<Month[]>([]);
   /** Newest first. */
   readonly movements = signal<Movement[]>([]);
+  /** Investiții ledger, newest first. */
+  readonly trades = signal<Trade[]>([]);
   readonly error = signal<string | null>(null);
 
   readonly loaded = computed(
@@ -154,7 +169,12 @@ export class BudgetStore {
         (qs) => {
           this.categories.set(
             qs.docs
-              .map((d) => ({ id: d.id, ...(d.data() as Omit<Category, 'id'>) }))
+              .map((d) => {
+                const data = d.data() as Omit<Category, 'id'> & { kind: string };
+                // Categories of the former „Investiții” kind are saving funds now.
+                const kind = data.kind === 'spending' ? 'spending' : 'saving';
+                return { id: d.id, ...data, kind } as Category;
+              })
               .sort((a, b) => a.position - b.position),
           );
           this.categoriesLoaded.set(true);
@@ -184,18 +204,32 @@ export class BudgetStore {
       onSnapshot(
         collection(db, 'movements'),
         (qs) => {
+          const legacy = qs.docs.filter((d) => isLegacyTrade(d.data() as LegacyTradeMovement));
+          void this.migrateLegacyTrades(legacy.map((d) => ({ id: d.id, data: d.data() as LegacyTradeMovement })));
           this.movements.set(
             qs.docs
-              .map((d) => {
-                const data = d.data() as Omit<Movement, 'id'> & { purchase?: TradeDetails | null };
-                return { id: d.id, ...data, trade: data.trade ?? data.purchase ?? null };
-              })
+              .filter((d) => !isLegacyTrade(d.data() as LegacyTradeMovement))
+              .map((d) => ({ id: d.id, ...(d.data() as Omit<Movement, 'id'>) }))
               .sort(
                 (a, b) =>
                   b.occurredOn.localeCompare(a.occurredOn) || b.createdAt.localeCompare(a.createdAt),
               ),
           );
           this.movementsLoaded.set(true);
+        },
+        fail,
+      ),
+      onSnapshot(
+        collection(db, 'trades'),
+        (qs) => {
+          this.trades.set(
+            qs.docs
+              .map((d) => ({ id: d.id, ...(d.data() as Omit<Trade, 'id'>) }))
+              .sort(
+                (a, b) =>
+                  b.occurredOn.localeCompare(a.occurredOn) || b.createdAt.localeCompare(a.createdAt),
+              ),
+          );
         },
         fail,
       ),
@@ -211,6 +245,7 @@ export class BudgetStore {
     this.categories.set([]);
     this.months.set([]);
     this.movements.set([]);
+    this.trades.set([]);
     this.error.set(null);
     this.profileLoaded.set(false);
     this.categoriesLoaded.set(false);
@@ -475,44 +510,63 @@ export class BudgetStore {
     await setDoc(doc(collection(db, 'movements')), movement);
   }
 
-  /**
-   * A purchase (shares × price + fees leave the budget) or a sale (shares × price − fees come
-   * back) in an investment category.
-   */
-  async addTrade(
-    categoryId: string,
-    type: Extract<MovementType, 'purchase' | 'sale'>,
-    details: TradeDetails,
-    note: string,
-    occurredOn: string,
-  ): Promise<void> {
-    const trade: TradeDetails = { ...details, symbol: normalizeSymbol(details.symbol) };
-    let amountCents: number;
-    if (type === 'purchase') {
-      const total = purchaseTotalCents(trade);
-      const balance = this.balances()[categoryId] ?? 0;
-      if (total > balance) {
-        throw new Error(`Suma depășește bugetul disponibil (${formatEUR(balance)}).`);
+  /** Records a purchase or sale on the Investiții ledger. No balance is checked or changed. */
+  async addTrade(type: TradeType, details: TradeDetails, note: string, occurredOn: string): Promise<void> {
+    const symbol = normalizeSymbol(details.symbol);
+    if (type === 'sale') {
+      const held = buildPositions(this.trades()).find((p) => p.symbol === symbol);
+      if (!held || held.shares < details.shares) {
+        throw new Error(`Nu ai atâtea acțiuni ${symbol}.`);
       }
-      amountCents = -total;
-    } else {
-      const held = buildPositions(this.movementsOf(categoryId)).find((p) => p.symbol === trade.symbol);
-      if (!held || held.shares < trade.shares) {
-        throw new Error(`Nu ai atâtea acțiuni ${trade.symbol} în acest fond.`);
-      }
-      amountCents = saleProceedsCents(trade);
     }
-    const movement: Omit<Movement, 'id'> = {
-      categoryId,
+    const trade: Omit<Trade, 'id'> = {
       type,
-      amountCents,
+      symbol,
+      shares: details.shares,
+      priceCents: details.priceCents,
+      feesCents: details.feesCents,
       occurredOn,
       note: note.trim(),
-      monthKey: null,
       createdAt: new Date().toISOString(),
-      trade,
     };
-    await setDoc(doc(collection(db, 'movements')), movement);
+    await setDoc(doc(collection(db, 'trades')), trade);
+  }
+
+  async deleteTrade(id: string): Promise<void> {
+    await deleteDoc(tradeRef(id));
+  }
+
+  /** One-time move of purchases and sales that were stored as movements into the trades ledger. */
+  private async migrateLegacyTrades(legacy: { id: string; data: LegacyTradeMovement }[]): Promise<void> {
+    if (legacy.length === 0 || this.migratingTrades) {
+      return;
+    }
+    this.migratingTrades = true;
+    try {
+      const batch = writeBatch(db);
+      for (const { id, data } of legacy) {
+        const details = data.trade ?? data.purchase;
+        if (details) {
+          const trade: Omit<Trade, 'id'> = {
+            type: data.type as TradeType,
+            symbol: normalizeSymbol(details.symbol),
+            shares: details.shares,
+            priceCents: details.priceCents,
+            feesCents: details.feesCents,
+            occurredOn: data.occurredOn,
+            note: data.note ?? '',
+            createdAt: data.createdAt,
+          };
+          batch.set(tradeRef(id), trade);
+        }
+        batch.delete(movementRef(id));
+      }
+      await batch.commit();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      this.migratingTrades = false;
+    }
   }
 
   async deleteMovement(id: string): Promise<void> {
@@ -530,4 +584,8 @@ function normalizeCategory(input: CategoryInput): CategoryInput {
     overflowToId: saving ? input.overflowToId : null,
     initialBalanceCents: input.initialBalanceCents,
   };
+}
+
+function isLegacyTrade(data: LegacyTradeMovement): boolean {
+  return data.type === 'purchase' || data.type === 'sale';
 }
